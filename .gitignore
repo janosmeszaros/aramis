@@ -1,0 +1,9 @@
+target/
+gen/
+bin/
+libs/
+.classpath
+.project
+.settings/*
+project.properties
+
