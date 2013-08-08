@@ -3,7 +3,8 @@ gen/
 bin/
 libs/
 .classpath
+.idea/
 .project
 .settings/*
 project.properties
-
+*.iml
