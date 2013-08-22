@@ -22,11 +22,7 @@
         <org.mockito.mockito-all>1.9.5</org.mockito.mockito-all>
         <org.slf4j.slf4j-android.version>1.6.1-RC1</org.slf4j.slf4j-android.version>
         <org.slf4j.slf4j-api.version>1.7.2</org.slf4j.slf4j-api.version>
-        <roboguice.version>2.0</roboguice.version>
         <joda-time.version>2.1</joda-time.version>
-        <actionbarsherlock.version>4.2.0</actionbarsherlock.version>
-        <roboguice-sherlock.version>1.5</roboguice-sherlock.version>
-        <spring.version>3.2.0.RELEASE</spring.version>
         <googlecode.androidannotations>2.7.1</googlecode.androidannotations>
     </properties>
     <build>
@@ -154,12 +150,6 @@
             <artifactId>mockito-core</artifactId>
             <version>${org.mockito.mockito-all}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.roboguice</groupId>
-            <artifactId>roboguice</artifactId>
-            <version>${roboguice.version}</version>
         </dependency>
         <dependency>
             <groupId>com.pivotallabs</groupId>

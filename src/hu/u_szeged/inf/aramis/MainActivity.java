@@ -5,15 +5,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.view.Menu;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.Click;
 import com.googlecode.androidannotations.annotations.EActivity;
+import com.googlecode.androidannotations.annotations.SeekBarProgressChange;
 import com.googlecode.androidannotations.annotations.ViewById;
 
 import org.apache.commons.io.FileUtils;
@@ -24,6 +26,8 @@ import java.io.File;
 
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 
+import static android.hardware.Camera.open;
+
 @EActivity(R.layout.activity_main)
 public class MainActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainActivity.class);
@@ -31,6 +35,10 @@ public class MainActivity extends Activity {
     protected FrameLayout preview;
     @ViewById(R.id.image_preview)
     protected ImageView imagePreview;
+    @ViewById(R.id.seekBar)
+    protected SeekBar brightness;
+    @ViewById(R.id.button_capture)
+    protected Button captureButton;
     @Bean
     protected TakePictureCallback takePictureCallback;
     private Camera camera;
@@ -45,6 +53,9 @@ public class MainActivity extends Activity {
         setupImagePreview();
         try {
             camera = getCameraInstance();
+            brightness.setMax(camera.getParameters().getMaxExposureCompensation() - camera.getParameters().getMinExposureCompensation());
+            brightness.setProgress(brightness.getMax());
+            LOGGER.info("Progress set to " + brightness.getMax());
             setupPreview();
         } catch (Exception e) {
             Toast error = Toast.makeText(getBaseContext(), "Error getting camera instance!", Toast.LENGTH_LONG);
@@ -66,23 +77,38 @@ public class MainActivity extends Activity {
 
     @Click(R.id.button_capture)
     public void takePicture() {
+        LOGGER.info("Start taking picture!");
         camera.takePicture(null, null, takePictureCallback);
-        setupImagePreview();
     }
 
     private Camera getCameraInstance() {
         Camera c = camera;
         if (c == null) {
-            c = Camera.open();
+            c = open();
             c.setDisplayOrientation(90);
         }
         return c;
     }
 
+    @SeekBarProgressChange(R.id.seekBar)
+    protected void setupBrightness(SeekBar seekBar, int progress, boolean fromUser) {
+        if (fromUser) {
+            Camera.Parameters parameters = camera.getParameters();
+            parameters.setExposureCompensation(progress - parameters.getMaxExposureCompensation());
+            camera.setParameters(parameters);
+            LOGGER.info("Exposure set to " + (progress - parameters.getMaxExposureCompensation()));
+        } else {
+            LOGGER.debug("Seekbar's value changed to {} pragmatically!", progress);
+        }
+
+    }
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    protected void onResume() {
+        super.onResume();
+        if (camera == null) {
+            setupCamera();
+        }
     }
 
     @Override
