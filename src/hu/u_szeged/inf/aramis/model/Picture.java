@@ -1,18 +1,20 @@
 package hu.u_szeged.inf.aramis.model;
 
+import android.graphics.Bitmap;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class Picture {
-    public final byte[] bytes;
+    public final Bitmap bitmap;
 
-    private Picture(byte[] bytes) {
-        this.bytes = bytes;
+    private Picture(Bitmap bitmap) {
+        this.bitmap = bitmap;
     }
 
-    public static Picture picture(byte[] bytes) {
-        return new Picture(bytes);
+    public static Picture picture(Bitmap bitmap) {
+        return new Picture(bitmap);
     }
 
     @Override

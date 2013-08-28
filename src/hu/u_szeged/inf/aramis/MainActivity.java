@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Timer;
 
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 
@@ -42,6 +44,8 @@ public class MainActivity extends Activity {
     @Bean
     protected TakePictureCallback takePictureCallback;
     private Camera camera;
+
+    private Timer pictureTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +82,13 @@ public class MainActivity extends Activity {
     @Click(R.id.button_capture)
     public void takePicture() {
         LOGGER.info("Start taking picture!");
-        camera.takePicture(null, null, takePictureCallback);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        new Thread() {
+            @Override
+            public void run() {
+                camera.takePicture(null, null, takePictureCallback);
+            }
+        }.start();
     }
 
     private Camera getCameraInstance() {
