@@ -12,6 +12,7 @@
         <android.support.version>r7</android.support.version>
         <android.version>4.1.1.4</android.version>
         <apache.commons.version>3.1</apache.commons.version>
+        <apache.commons.math.version>3.2</apache.commons.math.version>
         <apache.commons.io.version>2.4</apache.commons.io.version>
         <com.pivotallabs.robolectric.version>1.2</com.pivotallabs.robolectric.version>
         <ch.qos.logback.version>1.0.9</ch.qos.logback.version>
@@ -110,7 +111,12 @@
             <version>${apache.commons.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${apache.commons.math.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache.commons.io.version}</version>
         </dependency>

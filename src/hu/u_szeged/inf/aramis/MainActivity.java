@@ -58,8 +58,7 @@ public class MainActivity extends Activity {
         try {
             camera = getCameraInstance();
             brightness.setMax(camera.getParameters().getMaxExposureCompensation() - camera.getParameters().getMinExposureCompensation());
-            brightness.setProgress(brightness.getMax());
-            LOGGER.info("Progress set to " + brightness.getMax());
+            brightness.setProgress(0);
             setupPreview();
         } catch (Exception e) {
             Toast error = Toast.makeText(getBaseContext(), "Error getting camera instance!", Toast.LENGTH_LONG);
@@ -81,7 +80,7 @@ public class MainActivity extends Activity {
 
     @Click(R.id.button_capture)
     public void takePicture() {
-        LOGGER.info("Start taking picture!");
+        LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         new Thread() {
             @Override
@@ -96,6 +95,9 @@ public class MainActivity extends Activity {
         if (c == null) {
             c = open();
             c.setDisplayOrientation(90);
+            Camera.Parameters parameters = c.getParameters();
+            parameters.setRotation(90);
+            c.setParameters(parameters);
         }
         return c;
     }

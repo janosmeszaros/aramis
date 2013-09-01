@@ -12,11 +12,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
+import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+
+import static hu.u_szeged.inf.aramis.camera.PictureEvaluator.evaluate;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
 @EBean
 public class TakePictureCallback implements Camera.PictureCallback {
+    public static final int PICTURE_NUMBER = 5;
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
     @RootContext
     protected Context context;
@@ -28,14 +33,18 @@ public class TakePictureCallback implements Camera.PictureCallback {
         LOGGER.info("Picture size {} {}", camera.getParameters().getPictureSize().height, camera.getParameters().getPictureSize().width);
         collector.addPicture(picture(BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
         camera.startPreview();
-        if (collector.getSize() < 5) {
+        if (collector.getSize() < PICTURE_NUMBER) {
             sleep();
             camera.takePicture(null, null, this);
         } else {
             try {
-                collector.save(PictureEvaluator.evaluate(collector.getPictures()));
+                PictureSaver.save(evaluate(collector.getPictures(), collector.getDiffCoordinates()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             } catch (IOException e) {
-                LOGGER.error("Error evaluate pictures {}", e.getMessage());
+                e.printStackTrace();
             }
             collector.clear();
         }
@@ -45,6 +54,7 @@ public class TakePictureCallback implements Camera.PictureCallback {
         try {
             LOGGER.info("Sleeping for 1000 ms!");
             Thread.sleep(1000);
+            LOGGER.info("He is awake!!");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
