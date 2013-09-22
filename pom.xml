@@ -1,6 +1,6 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>Aramis</groupId>
     <artifactId>Aramis</artifactId>
@@ -14,7 +14,7 @@
         <apache.commons.version>3.1</apache.commons.version>
         <apache.commons.math.version>3.2</apache.commons.math.version>
         <apache.commons.io.version>2.4</apache.commons.io.version>
-        <com.pivotallabs.robolectric.version>1.2</com.pivotallabs.robolectric.version>
+        <robolectric.version>2.1.1</robolectric.version>
         <ch.qos.logback.version>1.0.9</ch.qos.logback.version>
         <hamcrest.version>1.3</hamcrest.version>
         <java.version>1.6</java.version>
@@ -50,7 +50,7 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies/>
+                <dependencies />
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -106,7 +106,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-        <groupId>org.apache.commons</groupId>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apache.commons.version}</version>
         </dependency>
@@ -116,7 +116,7 @@
             <version>${apache.commons.math.version}</version>
         </dependency>
         <dependency>
-        <groupId>commons-io</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache.commons.io.version}</version>
         </dependency>
@@ -126,7 +126,7 @@
             <version>${joda-time.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.slf4j</groupId>
+            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-android</artifactId>
             <version>${org.slf4j.slf4j-android.version}</version>
         </dependency>
@@ -158,9 +158,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.pivotallabs</groupId>
+            <groupId>org.robolectric</groupId>
             <artifactId>robolectric</artifactId>
-            <version>${com.pivotallabs.robolectric.version}</version>
+            <version>${robolectric.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

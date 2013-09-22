@@ -11,9 +11,6 @@ import com.googlecode.androidannotations.annotations.RootContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 
 import static hu.u_szeged.inf.aramis.camera.PictureEvaluator.evaluate;
@@ -37,15 +34,7 @@ public class TakePictureCallback implements Camera.PictureCallback {
             sleep();
             camera.takePicture(null, null, this);
         } else {
-            try {
-                PictureSaver.save(evaluate(collector.getPictures(), collector.getDiffCoordinates()));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            PictureSaver.save(evaluate(collector.getPictures()));
             collector.clear();
         }
     }
