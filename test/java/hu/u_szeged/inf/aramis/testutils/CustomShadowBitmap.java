@@ -2,6 +2,7 @@ package hu.u_szeged.inf.aramis.testutils;
 
 import android.graphics.Bitmap;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -35,6 +36,7 @@ public class CustomShadowBitmap extends ShadowBitmap {
         Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
         CustomShadowBitmap shadowBitmap = (CustomShadowBitmap) shadowOf(newBitmap);
         shadowBitmap.setPixels(pixels);
+        shadowBitmap.setDescription(getDescription());
         shadowBitmap.setHeight(getHeight());
         shadowBitmap.setWidth(getWidth());
         return newBitmap;
@@ -42,5 +44,33 @@ public class CustomShadowBitmap extends ShadowBitmap {
 
     public void setPixels(int[][] pixels) {
         this.pixels = pixels;
+    }
+
+    @Override
+    @Implementation
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    @Implementation
+    public boolean equals(Object o) {
+        if (!super.equals(o)) {
+            return false;
+        } else {
+            CustomShadowBitmap that = (CustomShadowBitmap) shadowOf((Bitmap) o);
+            return that.pixels.equals(pixels);
+        }
+    }
+
+    @Override
+    @Implementation
+    public String toString() {
+        return "Bitmap{" +
+                "description='" + getDescription() + '\'' +
+                ", width=" + getWidth() +
+                ", height=" + getHeight() +
+                ", pixels=" + pixels +
+                '}';
     }
 }

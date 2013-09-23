@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,23 +32,68 @@ public class PictureEvaluatorTest {
         pictures = new ArrayList<Picture>();
         diffCoordinates = new ArrayList<Coordinate>();
 
+        createSamplePicture(Color.BLUE);
+        createSamplePicture(Color.BLACK);
+        createSamplePicture(Color.WHITE);
+    }
+
+    private void createSamplePicture(int color) {
         Bitmap bitmap1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
-        Bitmap bitmap2 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
-        Bitmap bitmap3 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
-        bitmap1.setPixel(0, 0, Color.BLACK);
-        bitmap2.setPixel(0, 0, Color.WHITE);
-        bitmap3.setPixel(0, 0, Color.BLUE);
+        fillBitmap(bitmap1, color);
         pictures.add(picture(bitmap1));
-        pictures.add(picture(bitmap2));
-        pictures.add(picture(bitmap3));
-        diffCoordinates.add(coordinate(1, 1));
+    }
+
+    private void fillBitmap(Bitmap bitmap1, int color) {
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                bitmap1.setPixel(x, y, color);
+            }
+        }
     }
 
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
-    public void testEvaluate() throws IOException {
-        Picture picture = PictureEvaluator.evaluate(pictures);
+    public void testEvaluateWhenOnlyOnePixelIsDifferent() {
+        diffCoordinates.add(coordinate(1, 1));
 
+        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+
+        assertThat(picture.bitmap.getPixel(0, 0), equalTo(Color.WHITE));
+        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.BLUE));
+    }
+
+    @Test
+    @Config(shadows = {CustomShadowBitmap.class})
+    public void testEvaluateWhenNoneOfThePixelsAreDifferent() {
+        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+
+        assertThat(picture.bitmap, equalTo(pictures.get(pictures.size() - 1).bitmap));
+    }
+
+    @Test
+    @Config(shadows = {CustomShadowBitmap.class})
+    public void testEvaluateWhenAllOfThePixelsAreDifferent() {
+        diffCoordinates.add(coordinate(1, 1));
+        diffCoordinates.add(coordinate(0, 1));
+        diffCoordinates.add(coordinate(1, 0));
+        diffCoordinates.add(coordinate(0, 0));
+
+        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+
+        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.BLUE));
+        assertThat(picture.bitmap.getPixel(0, 1), equalTo(Color.BLUE));
+        assertThat(picture.bitmap.getPixel(1, 0), equalTo(Color.BLUE));
         assertThat(picture.bitmap.getPixel(0, 0), equalTo(Color.BLUE));
+    }
+
+    @Test
+    @Config(shadows = {CustomShadowBitmap.class})
+    public void testEvaluateWhenThereAreOddNumberOfPictures() {
+        createSamplePicture(Color.RED);
+        diffCoordinates.add(coordinate(1, 1));
+
+        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+
+        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.RED));
     }
 }

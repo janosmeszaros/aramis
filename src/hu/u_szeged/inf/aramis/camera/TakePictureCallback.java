@@ -8,8 +8,11 @@ import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.EBean;
 import com.googlecode.androidannotations.annotations.RootContext;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 
@@ -34,8 +37,14 @@ public class TakePictureCallback implements Camera.PictureCallback {
             sleep();
             camera.takePicture(null, null, this);
         } else {
-            PictureSaver.save(evaluate(collector.getPictures()));
-            collector.clear();
+            try {
+                PictureSaver.save(evaluate(collector.getPictures(), collector.getDiffCoordinates()));
+                collector.clear();
+            } catch (InterruptedException e) {
+                LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
+            } catch (ExecutionException e) {
+                LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
+            }
         }
     }
 
