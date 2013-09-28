@@ -25,6 +25,7 @@
         <org.slf4j.slf4j-api.version>1.7.2</org.slf4j.slf4j-api.version>
         <joda-time.version>2.1</joda-time.version>
         <googlecode.androidannotations>2.7.1</googlecode.androidannotations>
+        <google.guava.version>15.0</google.guava.version>
     </properties>
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -114,6 +115,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <version>${apache.commons.math.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${google.guava.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

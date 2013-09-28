@@ -20,25 +20,29 @@ import static java.lang.Math.abs;
 public class DiffCounter implements Callable<List<Coordinate>> {
     public static final int BORDER = 40;
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffCounter.class);
-    private CountDownLatch done;
+    private final CountDownLatch countDownLatch;
     private final Picture first;
     private final Picture second;
 
-    public DiffCounter(CountDownLatch done, Picture first, Picture second) {
-        this.done = done;
+    public DiffCounter(CountDownLatch countDownLatch, Picture first, Picture second) {
+        this.countDownLatch = countDownLatch;
         this.first = first;
         this.second = second;
     }
 
     @Override
-    public List<Coordinate> call() throws Exception {
+    public List<Coordinate> call() {
         List<Coordinate> coordinates = getDiffPicture(first, second);
-        done.countDown();
+        countDownLatch.countDown();
         return coordinates;
     }
 
     private List<Coordinate> getDiffPicture(Picture first, Picture second) {
         LOGGER.info("Start creating diff");
+        if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
+            throw new IllegalArgumentException("There are differences in the two picture dimensions");
+        }
+
         int width = first.bitmap.getWidth();
         int height = first.bitmap.getHeight();
         List<Coordinate> coordinates = new ArrayList<Coordinate>();

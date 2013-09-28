@@ -30,7 +30,6 @@ public class TakePictureCallback implements Camera.PictureCallback {
 
     @Override
     public void onPictureTaken(byte[] bytes, Camera camera) {
-        LOGGER.info("Picture size {} {}", camera.getParameters().getPictureSize().height, camera.getParameters().getPictureSize().width);
         collector.addPicture(picture(BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
         camera.startPreview();
         if (collector.getSize() < PICTURE_NUMBER) {

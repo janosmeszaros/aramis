@@ -1,11 +1,11 @@
 package hu.u_szeged.inf.aramis.camera;
 
+import com.google.common.collect.Lists;
 import com.googlecode.androidannotations.annotations.EBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,8 +23,8 @@ import hu.u_szeged.inf.aramis.model.Picture;
 public class PictureCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureCollector.class);
 
-    private List<Picture> pictures = new ArrayList<Picture>();
-    private List<FutureTask> tasks = new ArrayList<FutureTask>();
+    private List<Picture> pictures = Lists.newArrayList();
+    private List<FutureTask> tasks = Lists.newArrayList();
 
     private CountDownLatch countDown = new CountDownLatch(TakePictureCallback.PICTURE_NUMBER - 1);
     private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -45,12 +45,14 @@ public class PictureCollector {
         LOGGER.info("Countdown finished!");
         Set<Coordinate> diffPictures = new HashSet<Coordinate>();
         for (FutureTask<List<Coordinate>> task : tasks) {
+            LOGGER.debug("Adding coordinate for task no: {}", tasks.indexOf(task));
             diffPictures.addAll(task.get());
         }
-        return new ArrayList<Coordinate>(diffPictures);
+        return Lists.newArrayList(diffPictures);
     }
 
     public void clear() {
+        tasks.clear();
         pictures.clear();
     }
 

@@ -2,10 +2,11 @@ package hu.u_szeged.inf.aramis.camera;
 
 import android.graphics.Bitmap;
 
+import com.google.common.collect.Lists;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,9 +19,10 @@ public class PictureEvaluator {
     public static Picture evaluate(List<Picture> pictures, List<Coordinate> coordinates) {
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
-        LOGGER.debug("Starting evaluate pictures!");
+        LOGGER.info("Starting evaluate pictures!");
+        LOGGER.debug("Coordinates number: {}", coordinates.size());
         for (Coordinate coordinate : coordinates) {
-            List<Integer> pixelsFromPictures = new ArrayList<Integer>();
+            List<Integer> pixelsFromPictures = Lists.newArrayList();
             for (Picture picture : pictures) {
                 int pixel = picture.bitmap.getPixel(coordinate.x, coordinate.y);
                 pixelsFromPictures.add(pixel);
