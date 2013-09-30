@@ -32,5 +32,4 @@ public class PictureEvaluator {
         }
         return Picture.picture(output);
     }
-
 }

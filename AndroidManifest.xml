@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name="hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_" />
     </application>
     <uses-permission android:name="android.permission.CAMERA"/>
 

@@ -19,12 +19,13 @@ import hu.u_szeged.inf.aramis.camera.DirectoryHelper;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureSaver {
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyyMMMdd-HHmmssSS");
+    public static final String ALBUM_NAME = "aramis";
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureSaver.class);
-    private static final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyyMMMdd-HHmmssSS");
 
     public static void save(Picture picture) {
         try {
-            File file = FileUtils.getFile(DirectoryHelper.getAlbumStorageDir("aramis"), StringUtils.join(formatter.print(new DateTime()), ".jpeg"));
+            File file = FileUtils.getFile(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), StringUtils.join(DATE_TIME_FORMATTER.print(new DateTime()), ".jpeg"));
             LOGGER.info("Trying to save picture to {}", file.getAbsolutePath());
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -2,7 +2,6 @@ package hu.u_szeged.inf.aramis;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -19,13 +18,13 @@ import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.SeekBarProgressChange;
 import com.googlecode.androidannotations.annotations.ViewById;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
+import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
+import hu.u_szeged.inf.aramis.camera.DirectoryHelper;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
+import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 
 import static android.hardware.Camera.open;
 
@@ -64,8 +63,7 @@ public class MainActivity extends Activity {
     }
 
     private void setupImagePreview() {
-        File file = FileUtils.getFile(getBaseContext().getFilesDir(), "temp.jpg");
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+        Bitmap bitmap = DirectoryHelper.getLastPictureFromAlbum(PictureSaver.ALBUM_NAME);
         imagePreview.setImageBitmap(bitmap);
     }
 
@@ -85,6 +83,11 @@ public class MainActivity extends Activity {
                 camera.takePicture(null, null, takePictureCallback);
             }
         }.start();
+    }
+
+    @Click(R.id.image_preview)
+    public void showPictureList() {
+        PictureListActivity_.intent(this).start();
     }
 
     private Camera getCameraInstance() {
