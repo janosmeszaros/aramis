@@ -8,16 +8,19 @@ import android.widget.TextView;
 import com.googlecode.androidannotations.annotations.EViewGroup;
 import com.googlecode.androidannotations.annotations.ViewById;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.PictureRow;
 
 @EViewGroup(R.layout.picture_list_row)
 public class PictureListRow extends RelativeLayout {
-
-    @ViewById
+    private static final Logger LOGGER = LoggerFactory.getLogger(PictureListRow.class);
+    @ViewById(R.id.firstLine)
     TextView firstLine;
-    @ViewById
+    @ViewById(R.id.secondLine)
     TextView secondLine;
     @ViewById
     ImageView icon;
@@ -27,7 +30,9 @@ public class PictureListRow extends RelativeLayout {
     }
 
     public void bind(PictureRow picture) {
+        LOGGER.info("Write out picture: {}", picture);
         icon.setImageBitmap(picture.bitmap);
-        firstLine.setText(picture.lastModified.toString(PictureSaver.DATE_TIME_FORMATTER));
+        firstLine.setText(picture.file.getName());
+        secondLine.setText(picture.lastModified.toString(PictureSaver.DATE_TIME_FORMATTER));
     }
 }

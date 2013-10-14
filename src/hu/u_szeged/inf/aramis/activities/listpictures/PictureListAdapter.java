@@ -27,7 +27,6 @@ public class PictureListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         PictureListRow pictureListRow;
         if (convertView == null) {
             pictureListRow = PictureListRow_.build(context);

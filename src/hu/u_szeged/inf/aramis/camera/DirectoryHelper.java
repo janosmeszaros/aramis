@@ -34,7 +34,7 @@ public class DirectoryHelper {
     public static ImmutableList<PictureRow> getAllPictures(String albumName) {
         ImmutableList.Builder<PictureRow> builder = ImmutableList.builder();
         for (File picture : getAlbum(albumName).listFiles()) {
-            builder.add(pictureRow(decodeFile(picture.getPath()), new DateTime(picture.lastModified())));
+            builder.add(pictureRow(decodeFile(picture.getPath()), new DateTime(picture.lastModified()), picture));
         }
         return builder.build();
     }

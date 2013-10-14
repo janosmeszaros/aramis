@@ -7,37 +7,31 @@
 
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="wrap_content"
+        android:layout_width="?android:attr/listPreferredItemHeight"
         android:layout_height="fill_parent"
-        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_launcher"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="6dip"
-        android:contentDescription="TODO"
-        android:src="@drawable/ic_launcher" />
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:id="@+id/secondLine"
         android:layout_width="fill_parent"
         android:layout_height="26dip"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_toRightOf="@id/icon"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:text="Description"
-        android:textSize="12sp" />
+        android:gravity="left"
+        android:textSize="12sp"
+        android:layout_below="@+id/firstLine"
+        android:layout_toRightOf="@+id/icon" />
 
     <TextView
         android:id="@+id/firstLine"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/secondLine"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toRightOf="@id/icon"
-        android:gravity="center_vertical"
-        android:text="Example application"
-        android:textSize="16sp" />
+        android:gravity="left"
+        android:textSize="16sp"
+        android:layout_alignTop="@+id/icon"
+        android:layout_toRightOf="@+id/icon" />
 
 </RelativeLayout>
