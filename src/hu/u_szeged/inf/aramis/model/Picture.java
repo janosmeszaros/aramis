@@ -9,14 +9,17 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class Picture {
     public final Bitmap bitmap;
+    public final String name;
 
-    private Picture(Bitmap bitmap) {
+    private Picture(Bitmap bitmap, String name) {
         this.bitmap = bitmap;
+        this.name = name;
     }
 
-    public static Picture picture(Bitmap bitmap) {
+    public static Picture picture(String name, Bitmap bitmap) {
+        Validate.notEmpty(name, "name must not be empty!");
         Validate.notNull(bitmap, "bitmap must not be null!");
-        return new Picture(bitmap);
+        return new Picture(bitmap, name);
     }
 
     @Override

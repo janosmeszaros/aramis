@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 @EView
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private static final Logger LOGGER = LoggerFactory.getLogger(CameraPreview.class);
     private SurfaceHolder mHolder;
     private Camera camera;
@@ -52,10 +52,5 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (Exception e) {
             LOGGER.error("Error starting camera preview: " + e.getMessage());
         }
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] bytes, Camera camera) {
-        LOGGER.info("Frame size: {}", bytes.length);
     }
 }

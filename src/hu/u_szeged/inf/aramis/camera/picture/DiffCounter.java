@@ -1,5 +1,8 @@
 package hu.u_szeged.inf.aramis.camera.picture;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +41,9 @@ public class DiffCounter implements Callable<List<Coordinate>> {
     }
 
     private List<Coordinate> getDiffPicture(Picture first, Picture second) {
+        PictureSaver.save(first);
+        PictureSaver.save(second);
+        Bitmap result = second.bitmap.copy(second.bitmap.getConfig(), true);
         LOGGER.info("Start creating diff");
         if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
             throw new IllegalArgumentException("There are differences in the two picture dimensions");
@@ -51,10 +57,12 @@ public class DiffCounter implements Callable<List<Coordinate>> {
                 int totalDiff = countTotalDiff(first.bitmap.getPixel(x, y), second.bitmap.getPixel(x, y));
                 if (totalDiff > BORDER) {
                     coordinates.add(coordinate(x, y));
+                    result.setPixel(x, y, Color.BLUE);
                 }
             }
         }
         LOGGER.info("Diff created!");
+        PictureSaver.save(Picture.picture(second.name + "_diffs", result));
         return coordinates;
     }
 

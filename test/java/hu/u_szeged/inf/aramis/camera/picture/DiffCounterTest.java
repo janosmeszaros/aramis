@@ -82,7 +82,7 @@ public class DiffCounterTest {
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenThereIsDifferenceInPictureWeight() {
         Picture picture1 = createSamplePicture(20, 30, 40);
-        Picture picture2 = picture(Bitmap.createBitmap(2, 3, Bitmap.Config.ARGB_4444));
+        Picture picture2 = picture("name", Bitmap.createBitmap(2, 3, Bitmap.Config.ARGB_4444));
         underTest = new DiffCounter(countDownLatch, picture1, picture2);
 
         underTest.call();
@@ -93,7 +93,7 @@ public class DiffCounterTest {
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenThereIsDifferenceInPictureHeight() {
         Picture picture1 = createSamplePicture(20, 30, 40);
-        Picture picture2 = picture(Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_4444));
+        Picture picture2 = picture("name", Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_4444));
         underTest = new DiffCounter(countDownLatch, picture1, picture2);
 
         underTest.call();
@@ -102,7 +102,7 @@ public class DiffCounterTest {
     private Picture createSamplePicture(int red, int green, int blue) {
         Bitmap bitmap1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
         fillBitmap(bitmap1, Color.rgb(red, green, blue));
-        return picture(bitmap1);
+        return picture("name", bitmap1);
     }
 
     private void fillBitmap(Bitmap bitmap1, int color) {

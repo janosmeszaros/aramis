@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 
     @AfterViews
     protected void setupCamera() {
-        setupImagePreview();
+        //setupImagePreview();
         try {
             camera = getCameraInstance();
             brightness.setMax(camera.getParameters().getMaxExposureCompensation() - camera.getParameters().getMinExposureCompensation());
@@ -77,12 +77,7 @@ public class MainActivity extends Activity {
     public void takePicture() {
         LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        new Thread() {
-            @Override
-            public void run() {
-                camera.takePicture(null, null, takePictureCallback);
-            }
-        }.start();
+        camera.setOneShotPreviewCallback(takePictureCallback);
     }
 
     @Click(R.id.image_preview)
@@ -97,6 +92,7 @@ public class MainActivity extends Activity {
             c.setDisplayOrientation(90);
             Camera.Parameters parameters = c.getParameters();
             parameters.setRotation(90);
+            takePictureCallback.setSize(parameters.getPictureSize());
             c.setParameters(parameters);
         }
         return c;

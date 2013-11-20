@@ -16,7 +16,7 @@ import hu.u_szeged.inf.aramis.model.Picture;
 public class PictureEvaluator {
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
 
-    public static Picture evaluate(List<Picture> pictures, List<Coordinate> coordinates) {
+    public static Bitmap evaluate(List<Picture> pictures, List<Coordinate> coordinates) {
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
         LOGGER.info("Starting evaluate pictures!");
@@ -30,6 +30,6 @@ public class PictureEvaluator {
             Collections.sort(pixelsFromPictures);
             output.setPixel(coordinate.x, coordinate.y, pixelsFromPictures.get(pictures.size() / 2));
         }
-        return Picture.picture(output);
+        return output;
     }
 }

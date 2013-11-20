@@ -22,7 +22,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-public class PictureEvaluatorTest {
+public class PictureEvaluatorUnitTest {
     private List<Picture> pictures;
     private List<Coordinate> diffCoordinates;
 
@@ -40,7 +40,7 @@ public class PictureEvaluatorTest {
     private void createSamplePicture(int color) {
         Bitmap bitmap1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
         fillBitmap(bitmap1, color);
-        pictures.add(picture(bitmap1));
+        pictures.add(picture("name", bitmap1));
     }
 
     private void fillBitmap(Bitmap bitmap1, int color) {
@@ -56,18 +56,18 @@ public class PictureEvaluatorTest {
     public void testEvaluateWhenOnlyOnePixelIsDifferent() {
         diffCoordinates.add(coordinate(1, 1));
 
-        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
 
-        assertThat(picture.bitmap.getPixel(0, 0), equalTo(Color.WHITE));
-        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.BLUE));
+        assertThat(bitmap.getPixel(0, 0), equalTo(Color.WHITE));
+        assertThat(bitmap.getPixel(1, 1), equalTo(Color.BLUE));
     }
 
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
     public void testEvaluateWhenNoneOfThePixelsAreDifferent() {
-        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
 
-        assertThat(picture.bitmap, equalTo(pictures.get(pictures.size() - 1).bitmap));
+        assertThat(bitmap, equalTo(pictures.get(pictures.size() - 1).bitmap));
     }
 
     @Test
@@ -78,12 +78,12 @@ public class PictureEvaluatorTest {
         diffCoordinates.add(coordinate(1, 0));
         diffCoordinates.add(coordinate(0, 0));
 
-        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
 
-        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.BLUE));
-        assertThat(picture.bitmap.getPixel(0, 1), equalTo(Color.BLUE));
-        assertThat(picture.bitmap.getPixel(1, 0), equalTo(Color.BLUE));
-        assertThat(picture.bitmap.getPixel(0, 0), equalTo(Color.BLUE));
+        assertThat(bitmap.getPixel(1, 1), equalTo(Color.BLUE));
+        assertThat(bitmap.getPixel(0, 1), equalTo(Color.BLUE));
+        assertThat(bitmap.getPixel(1, 0), equalTo(Color.BLUE));
+        assertThat(bitmap.getPixel(0, 0), equalTo(Color.BLUE));
     }
 
     @Test
@@ -92,8 +92,8 @@ public class PictureEvaluatorTest {
         createSamplePicture(Color.RED);
         diffCoordinates.add(coordinate(1, 1));
 
-        Picture picture = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
 
-        assertThat(picture.bitmap.getPixel(1, 1), equalTo(Color.RED));
+        assertThat(bitmap.getPixel(1, 1), equalTo(Color.RED));
     }
 }

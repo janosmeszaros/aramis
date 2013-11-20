@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -23,9 +22,10 @@ public class PictureSaver {
     public static final String ALBUM_NAME = "aramis";
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureSaver.class);
 
+    //TODO make is non static
     public static void save(Picture picture) {
         try {
-            File file = FileUtils.getFile(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), StringUtils.join(DATE_TIME_FORMATTER.print(new DateTime()), ".jpeg"));
+            File file = FileUtils.getFile(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), StringUtils.join(picture.name, ".jpeg"));
             LOGGER.info("Trying to save picture to {}", file.getAbsolutePath());
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();

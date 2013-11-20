@@ -45,8 +45,9 @@ public class PictureCollector {
         LOGGER.info("Countdown finished!");
         Set<Coordinate> diffPictures = new HashSet<Coordinate>();
         for (FutureTask<List<Coordinate>> task : tasks) {
-            LOGGER.debug("Adding coordinate for task no: {}", tasks.indexOf(task));
-            diffPictures.addAll(task.get());
+            List<Coordinate> coordinates = task.get();
+            LOGGER.debug("Adding {} coordinates for task no: {}", coordinates.size(), tasks.indexOf(task));
+            diffPictures.addAll(coordinates);
         }
         return Lists.newArrayList(diffPictures);
     }
