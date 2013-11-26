@@ -75,6 +75,7 @@ public class MainActivity extends Activity {
 
     @Click(R.id.button_capture)
     public void takePicture() {
+        //ProgressBarHandler.start(this);
         LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         camera.setOneShotPreviewCallback(takePictureCallback);

@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import hu.u_szeged.inf.aramis.model.Coordinate;
@@ -44,7 +44,7 @@ public class DiffCounterTest {
         Picture picture2 = createSamplePicture(20, 30, 40);
         underTest = new DiffCounter(countDownLatch, picture1, picture2);
 
-        List<Coordinate> diffs = underTest.call();
+        Set<Coordinate> diffs = underTest.call();
 
         assertThat(diffs.size(), equalTo(1));
         assertThat(diffs, hasItem(coordinate(1, 1)));
@@ -57,7 +57,7 @@ public class DiffCounterTest {
         Picture picture2 = createSamplePicture(20, 30, 40);
         underTest = new DiffCounter(countDownLatch, picture1, picture2);
 
-        List<Coordinate> diffs = underTest.call();
+        Set<Coordinate> diffs = underTest.call();
 
         assertThat(diffs.size(), equalTo(0));
     }
@@ -71,7 +71,7 @@ public class DiffCounterTest {
         picture2.bitmap.setPixel(0, 1, Color.rgb(20, 30 + DiffCounter.BORDER + 1, 40));
         underTest = new DiffCounter(countDownLatch, picture1, picture2);
 
-        List<Coordinate> diffs = underTest.call();
+        Set<Coordinate> diffs = underTest.call();
 
         assertThat(diffs.size(), equalTo(2));
         assertThat(diffs, hasItem(coordinate(1, 1)));

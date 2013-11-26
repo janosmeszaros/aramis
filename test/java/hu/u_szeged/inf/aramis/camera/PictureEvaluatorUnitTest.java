@@ -3,6 +3,8 @@ package hu.u_szeged.inf.aramis.camera;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.google.common.collect.Sets;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +13,7 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
@@ -24,13 +27,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith(RobolectricTestRunner.class)
 public class PictureEvaluatorUnitTest {
     private List<Picture> pictures;
-    private List<Coordinate> diffCoordinates;
+    private Set<Coordinate> diffCoordinates;
 
     @Before
     @Config(shadows = {CustomShadowBitmap.class})
     public void setup() {
         pictures = new ArrayList<Picture>();
-        diffCoordinates = new ArrayList<Coordinate>();
+        diffCoordinates = Sets.newHashSet();
 
         createSamplePicture(Color.BLUE);
         createSamplePicture(Color.BLACK);

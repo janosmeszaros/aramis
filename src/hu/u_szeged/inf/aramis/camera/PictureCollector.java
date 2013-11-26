@@ -1,12 +1,12 @@
 package hu.u_szeged.inf.aramis.camera;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.googlecode.androidannotations.annotations.EBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -32,24 +32,24 @@ public class PictureCollector {
     public void addPicture(Picture picture) {
         pictures.add(picture);
         if (pictures.size() > 1) {
-            FutureTask<List<Coordinate>> task = new FutureTask<List<Coordinate>>(
+            FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(
                     new DiffCounter(countDown, pictures.get(pictures.size() - 2), pictures.get(pictures.size() - 1)));
             tasks.add(task);
             executorService.execute(task);
         }
     }
 
-    public List<Coordinate> getDiffCoordinates() throws InterruptedException, ExecutionException {
+    public Set<Coordinate> getDiffCoordinates() throws InterruptedException, ExecutionException {
         LOGGER.info("Waiting for countdown!");
         countDown.await();
         LOGGER.info("Countdown finished!");
-        Set<Coordinate> diffPictures = new HashSet<Coordinate>();
-        for (FutureTask<List<Coordinate>> task : tasks) {
-            List<Coordinate> coordinates = task.get();
+        Set<Coordinate> diffCoordinates = Sets.newHashSet();
+        for (FutureTask<Set<Coordinate>> task : tasks) {
+            Set<Coordinate> coordinates = task.get();
             LOGGER.debug("Adding {} coordinates for task no: {}", coordinates.size(), tasks.indexOf(task));
-            diffPictures.addAll(coordinates);
+            diffCoordinates.addAll(coordinates);
         }
-        return Lists.newArrayList(diffPictures);
+        return diffCoordinates;
     }
 
     public void clear() {

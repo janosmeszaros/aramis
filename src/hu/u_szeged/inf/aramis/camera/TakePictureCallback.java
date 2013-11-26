@@ -1,22 +1,23 @@
 package hu.u_szeged.inf.aramis.camera;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 
 import com.googlecode.androidannotations.annotations.Background;
 import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.EBean;
-import com.googlecode.androidannotations.annotations.RootContext;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static hu.u_szeged.inf.aramis.camera.PictureEvaluator.evaluate;
@@ -28,8 +29,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
     private int[] pixels;
     private Camera.Size size;
-    @RootContext
-    protected Context context;
     @Bean
     protected PictureCollector collector;
 
@@ -42,8 +41,10 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             camera.setOneShotPreviewCallback(this);
         } else {
             try {
-                savePicture(picture(name + "_result", evaluate(collector.getPictures(), collector.getDiffCoordinates())));
+                Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
+                savePicture(picture(name + "_result", evaluate(collector.getPictures(), diffCoordinates)));
                 collector.clear();
+                ProgressBarHandler.stop();
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
             } catch (ExecutionException e) {
