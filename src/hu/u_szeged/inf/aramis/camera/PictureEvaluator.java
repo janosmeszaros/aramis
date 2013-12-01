@@ -7,6 +7,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
+import com.googlecode.androidannotations.annotations.EBean;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
@@ -22,10 +23,11 @@ import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
+@EBean
 public class PictureEvaluator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
 
-    public static Bitmap evaluate(Picture first, Picture second) {
+    public Bitmap evaluate(Picture first, Picture second) {
         Bitmap output = first.bitmap.copy(first.bitmap.getConfig(), true);
         List<Picture> pictures = Lists.newArrayList(first, second);
         for (int x = 0; x < first.bitmap.getWidth(); x++) {
@@ -36,11 +38,11 @@ public class PictureEvaluator {
         return output;
     }
 
-    public static Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
+    public Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
         Table<Integer, Integer, Boolean> table = HashBasedTable.create();
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
-        LOGGER.info("Starting evaluate pictures!");
+        LOGGER.info("Starting evaluate pictures!" + Thread.currentThread().getName());
         LOGGER.debug("Coordinates number: {}", coordinates.size());
         for (Coordinate coordinate : coordinates) {
             Integer color = evaluatePixel(pictures, coordinate.x, coordinate.y);
@@ -52,7 +54,7 @@ public class PictureEvaluator {
         return output;
     }
 
-    private static Integer evaluatePixel(List<Picture> pictures, int x, int y) {
+    private Integer evaluatePixel(List<Picture> pictures, int x, int y) {
         List<Integer> pixelsFromPictures = Lists.newArrayList();
         for (Picture picture : pictures) {
             int pixel = picture.bitmap.getPixel(x, y);
@@ -62,7 +64,7 @@ public class PictureEvaluator {
         return pixelsFromPictures.get(pictures.size() / 2);
     }
 
-    private static void clusterize(Bitmap second, Table<Integer, Integer, Boolean> table) {
+    private void clusterize(Bitmap second, Table<Integer, Integer, Boolean> table) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         List<Cluster<Coordinate>> clusters = Clustering.clustering(1, 2).cluster(table);
         stopwatch.stop();

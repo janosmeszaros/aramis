@@ -59,7 +59,7 @@ public class PictureEvaluatorUnitTest {
     public void testEvaluateWhenOnlyOnePixelIsDifferent() {
         diffCoordinates.add(coordinate(1, 1));
 
-        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = new PictureEvaluator().evaluate(pictures, diffCoordinates);
 
         assertThat(bitmap.getPixel(0, 0), equalTo(Color.WHITE));
         assertThat(bitmap.getPixel(1, 1), equalTo(Color.BLUE));
@@ -68,7 +68,7 @@ public class PictureEvaluatorUnitTest {
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
     public void testEvaluateWhenNoneOfThePixelsAreDifferent() {
-        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = new PictureEvaluator().evaluate(pictures, diffCoordinates);
 
         assertThat(bitmap, equalTo(pictures.get(pictures.size() - 1).bitmap));
     }
@@ -81,7 +81,7 @@ public class PictureEvaluatorUnitTest {
         diffCoordinates.add(coordinate(1, 0));
         diffCoordinates.add(coordinate(0, 0));
 
-        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = new PictureEvaluator().evaluate(pictures, diffCoordinates);
 
         assertThat(bitmap.getPixel(1, 1), equalTo(Color.BLUE));
         assertThat(bitmap.getPixel(0, 1), equalTo(Color.BLUE));
@@ -95,7 +95,7 @@ public class PictureEvaluatorUnitTest {
         createSamplePicture(Color.RED);
         diffCoordinates.add(coordinate(1, 1));
 
-        Bitmap bitmap = PictureEvaluator.evaluate(pictures, diffCoordinates);
+        Bitmap bitmap = new PictureEvaluator().evaluate(pictures, diffCoordinates);
 
         assertThat(bitmap.getPixel(1, 1), equalTo(Color.RED));
     }

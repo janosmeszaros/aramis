@@ -20,17 +20,20 @@ import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
-import static hu.u_szeged.inf.aramis.camera.PictureEvaluator.evaluate;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
 @EBean
 public class TakePictureCallback implements Camera.PreviewCallback {
     public static final int PICTURE_NUMBER = 5;
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
-    private int[] pixels;
-    private Camera.Size size;
     @Bean
     protected PictureCollector collector;
+    @Bean
+    protected PictureEvaluator evaluator;
+    @Bean
+    protected ProgressBarHandler progressBarHandler;
+    private int[] pixels;
+    private Camera.Size size;
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
@@ -40,16 +43,22 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             sleep();
             camera.setOneShotPreviewCallback(this);
         } else {
-            try {
-                Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
-                savePicture(picture(name + "_result", evaluate(collector.getPictures(), diffCoordinates)));
-                collector.clear();
-                ProgressBarHandler.stop();
-            } catch (InterruptedException e) {
-                LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
-            } catch (ExecutionException e) {
-                LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
-            }
+            evaluate(name);
+        }
+    }
+
+    @Background
+    protected void evaluate(String name) {
+        try {
+            progressBarHandler.start();
+            Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
+            savePicture(picture(name + "_result", evaluator.evaluate(collector.getPictures(), diffCoordinates)));
+            collector.clear();
+            progressBarHandler.stop();
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
+        } catch (ExecutionException e) {
+            LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
         }
     }
 
@@ -60,6 +69,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         LOGGER.info("Picture decoded");
         Picture picture = picture(name, Bitmap.createBitmap(pixels, size.width, size.height, Bitmap.Config.ARGB_8888));
         collector.addPicture(picture);
+        savePicture(picture);
     }
 
     @Background

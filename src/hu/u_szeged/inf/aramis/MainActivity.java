@@ -1,6 +1,7 @@
 package hu.u_szeged.inf.aramis;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.Click;
 import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.SeekBarProgressChange;
+import com.googlecode.androidannotations.annotations.UiThread;
 import com.googlecode.androidannotations.annotations.ViewById;
 
 import org.slf4j.Logger;
@@ -42,6 +44,7 @@ public class MainActivity extends Activity {
     @Bean
     protected TakePictureCallback takePictureCallback;
     private Camera camera;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,6 @@ public class MainActivity extends Activity {
 
     @Click(R.id.button_capture)
     public void takePicture() {
-        //ProgressBarHandler.start(this);
         LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         camera.setOneShotPreviewCallback(takePictureCallback);
@@ -128,5 +130,15 @@ public class MainActivity extends Activity {
             camera.release();
             camera = null;
         }
+    }
+
+    @UiThread
+    public void showProgress() {
+        ProgressDialog.show(this, "Processing...", "Please wait.");
+    }
+
+    @UiThread
+    public void dismissProgress() {
+        progressDialog.dismiss();
     }
 }
