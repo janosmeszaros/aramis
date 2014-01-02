@@ -22,20 +22,24 @@ public class PictureSaver {
     public static final String ALBUM_NAME = "aramis";
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureSaver.class);
 
-    //TODO make is non static
+    //TODO make it non static
     public static void save(Picture picture) {
         try {
-            File file = FileUtils.getFile(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), StringUtils.join(picture.name, ".jpeg"));
+            File file = FileUtils.getFile(getDirectoryToSave(picture));
             LOGGER.info("Trying to save picture to {}", file.getAbsolutePath());
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 picture.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                 FileUtils.writeByteArrayToFile(file, out.toByteArray());
                 out.close();
-                LOGGER.info("Picture saved to " + file.getAbsolutePath());
+                LOGGER.info("Picture saved to {}", file.getAbsolutePath());
             }
         } catch (IOException e) {
             LOGGER.error("Error writing picture file!", ExceptionUtils.getRootCause(e));
         }
+    }
+
+    public static String getDirectoryToSave(Picture picture) throws IOException {
+        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), File.separator, picture.name, ".jpeg");
     }
 }

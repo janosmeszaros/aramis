@@ -1,5 +1,8 @@
 package hu.u_szeged.inf.aramis.camera.picture;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
 import com.google.common.collect.Sets;
 
 import org.slf4j.Logger;
@@ -43,7 +46,7 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
         if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
             throw new IllegalArgumentException("There are differences in the two picture dimensions");
         }
-
+        Bitmap diffBitmap = second.bitmap.copy(second.bitmap.getConfig(), true);
         int width = first.bitmap.getWidth();
         int height = first.bitmap.getHeight();
         Set<Coordinate> coordinates = Sets.newLinkedHashSet();
@@ -52,14 +55,20 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
                 int totalDiff = countTotalDiff(first.bitmap.getPixel(x, y), second.bitmap.getPixel(x, y));
                 if (totalDiff > BORDER) {
                     coordinates.add(coordinate(x, y));
+                    diffBitmap.setPixel(x, y, Color.BLUE);
                 }
             }
         }
         LOGGER.info("Diff created! {}", coordinates.size());
+        savePicture(Picture.picture(second.name + "_diff", diffBitmap));
         return coordinates;
     }
 
-    public static int countTotalDiff(int firstPixel, int secondPixel) {
+    protected void savePicture(Picture picture) {
+        PictureSaver.save(picture);
+    }
+
+    private synchronized int countTotalDiff(int firstPixel, int secondPixel) {
         int redDelta = abs(red(firstPixel) - red(secondPixel));
         int greenDelta = abs(green(firstPixel) - green(secondPixel));
         int blueDelta = abs(blue(firstPixel) - blue(secondPixel));
