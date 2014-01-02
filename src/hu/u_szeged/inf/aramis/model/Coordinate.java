@@ -3,7 +3,9 @@ package hu.u_szeged.inf.aramis.model;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 
-public class Coordinate implements Clusterable {
+import java.io.Serializable;
+
+public class Coordinate implements Clusterable, Serializable {
     public final int x;
     public final int y;
 

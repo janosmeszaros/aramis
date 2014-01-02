@@ -2,9 +2,7 @@ package hu.u_szeged.inf.aramis.camera;
 
 import android.graphics.Bitmap;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +29,6 @@ public class PictureEvaluator {
     }
 
     public Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
-        Table<Integer, Integer, Boolean> table = HashBasedTable.create();
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
         LOGGER.info("Starting evaluate pictures!" + Thread.currentThread().getName());
@@ -39,7 +36,15 @@ public class PictureEvaluator {
         for (Coordinate coordinate : coordinates) {
             Integer color = evaluatePixel(pictures, coordinate.x, coordinate.y);
             output.setPixel(coordinate.x, coordinate.y, color);
-            table.put(coordinate.x, coordinate.y, false);
+        }
+        return output;
+    }
+
+    public Bitmap switchColors(Picture cluster, Picture result, List<Coordinate> coordinates) {
+        Bitmap output = cluster.bitmap.copy(cluster.bitmap.getConfig(), true);
+        LOGGER.debug("Coordinates number: {}", coordinates.size());
+        for (Coordinate coordinate : coordinates) {
+            output.setPixel(coordinate.x, coordinate.y, result.bitmap.getPixel(coordinate.x, coordinate.y));
         }
         return output;
     }

@@ -1,5 +1,6 @@
 package hu.u_szeged.inf.aramis.camera;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 
@@ -23,14 +24,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import hu.u_szeged.inf.aramis.MainActivity;
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.activities.ResultActivity_;
 import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
+import hu.u_szeged.inf.aramis.camera.picture.Clustering;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
+import static hu.u_szeged.inf.aramis.camera.picture.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
 @EBean
@@ -40,7 +42,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @App
     protected MainApplication application;
     @Inject
-    protected MainActivity context;
+    protected Context context;
     @Inject
     protected PictureCollector collector;
     @Inject
@@ -48,7 +50,9 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Inject
     protected ProgressBarHandler progressBarHandler;
     @Inject
-    protected ClusterCounter clusterCounter;
+    protected ClusterUtils clusterCounter;
+    @Inject
+    protected Clustering clustering;
     private int[] pixels;
     private Camera.Size size;
 
@@ -72,15 +76,16 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Background
     protected void evaluate(String name) {
         try {
-            progressBarHandler.start();
+            //progressBarHandler.start();
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
             Bitmap result = evaluator.evaluate(collector.getPictures(), diffCoordinates);
             Picture resultPicture = picture(name + "_result", result);
             savePicture(resultPicture);
             collector.clear();
-            List<Cluster<Coordinate>> clusters = clusterCounter.clusterize(resultPicture.bitmap, transformSet(diffCoordinates));
-            progressBarHandler.stop();
-            startResultActivity(resultPicture, clusters);
+            List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
+            Picture clusteredPicture = clusterCounter.createBitmapFromClusters(resultPicture.bitmap, clusterList);
+            //progressBarHandler.stop();
+            startResultActivity(resultPicture, clusterList, clusteredPicture);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -90,9 +95,9 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     }
 
     @UiThread
-    protected void startResultActivity(Picture picture, List<Cluster<Coordinate>> clusters) {
+    protected void startResultActivity(Picture picture, List<Cluster<Coordinate>> clusters, Picture clusteredPicture) {
         try {
-            ResultActivity_.intent(context).bitmapPath(PictureSaver.getDirectoryToSave(picture)).clusters(clusters).start();
+            ResultActivity_.intent(context).resultBitmapPath(getFilePathForPicture(picture)).clusterBitmapPath(getFilePathForPicture(clusteredPicture)).clusters(clusters).start();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -14,7 +14,6 @@ import hu.u_szeged.inf.aramis.MainActivity;
 @EBean
 public class ProgressBarHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressBarHandler.class);
-
     @RootContext
     protected MainActivity context;
     private ProgressDialog progressDialog;

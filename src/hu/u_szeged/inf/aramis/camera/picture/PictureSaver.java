@@ -25,7 +25,7 @@ public class PictureSaver {
     //TODO make it non static
     public static void save(Picture picture) {
         try {
-            File file = FileUtils.getFile(getDirectoryToSave(picture));
+            File file = FileUtils.getFile(getFilePathForPicture(picture));
             LOGGER.info("Trying to save picture to {}", file.getAbsolutePath());
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -39,7 +39,7 @@ public class PictureSaver {
         }
     }
 
-    public static String getDirectoryToSave(Picture picture) throws IOException {
+    public static String getFilePathForPicture(Picture picture) throws IOException {
         return StringUtils.join(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), File.separator, picture.name, ".jpeg");
     }
 }
