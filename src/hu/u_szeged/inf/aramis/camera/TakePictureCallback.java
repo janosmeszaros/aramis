@@ -3,22 +3,28 @@ package hu.u_szeged.inf.aramis.camera;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.google.inject.Inject;
+import com.googlecode.androidannotations.annotations.AfterInject;
+import com.googlecode.androidannotations.annotations.App;
 import com.googlecode.androidannotations.annotations.Background;
-import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.EBean;
-import com.googlecode.androidannotations.annotations.RootContext;
 import com.googlecode.androidannotations.annotations.UiThread;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.math3.ml.clustering.Cluster;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainActivity;
+import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.activities.ResultActivity_;
 import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
@@ -31,16 +37,25 @@ import static hu.u_szeged.inf.aramis.model.Picture.picture;
 public class TakePictureCallback implements Camera.PreviewCallback {
     public static final int PICTURE_NUMBER = 5;
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
-    @RootContext
+    @App
+    protected MainApplication application;
+    @Inject
     protected MainActivity context;
-    @Bean
+    @Inject
     protected PictureCollector collector;
-    @Bean
+    @Inject
     protected PictureEvaluator evaluator;
-    @Bean
+    @Inject
     protected ProgressBarHandler progressBarHandler;
+    @Inject
+    protected ClusterCounter clusterCounter;
     private int[] pixels;
     private Camera.Size size;
+
+    @AfterInject
+    void injectRoboGuiceDependencies() {
+        application.getInjector().injectMembers(this);
+    }
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
@@ -63,8 +78,9 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             Picture resultPicture = picture(name + "_result", result);
             savePicture(resultPicture);
             collector.clear();
+            List<Cluster<Coordinate>> clusters = clusterCounter.clusterize(resultPicture.bitmap, transformSet(diffCoordinates));
             progressBarHandler.stop();
-            startResultActivity(resultPicture);
+            startResultActivity(resultPicture, clusters);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -74,9 +90,9 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     }
 
     @UiThread
-    protected void startResultActivity(Picture picture) {
+    protected void startResultActivity(Picture picture, List<Cluster<Coordinate>> clusters) {
         try {
-            ResultActivity_.intent(context).bitmapPath(PictureSaver.getDirectoryToSave(picture)).start();
+            ResultActivity_.intent(context).bitmapPath(PictureSaver.getDirectoryToSave(picture)).clusters(clusters).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,6 +111,14 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Background
     protected void savePicture(Picture picture) {
         PictureSaver.save(picture);
+    }
+
+    private Table<Integer, Integer, Boolean> transformSet(Set<Coordinate> diffCoordinates) {
+        Table<Integer, Integer, Boolean> table = HashBasedTable.create(diffCoordinates.size(), diffCoordinates.size());
+        for (Coordinate coordinate : diffCoordinates) {
+            table.put(coordinate.x, coordinate.y, false);
+        }
+        return table;
     }
 
     private void sleep() {

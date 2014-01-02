@@ -186,5 +186,10 @@
             <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.roboguice</groupId>
+            <artifactId>roboguice</artifactId>
+            <version>1.1.1</version>
+        </dependency>
     </dependencies>
 </project>

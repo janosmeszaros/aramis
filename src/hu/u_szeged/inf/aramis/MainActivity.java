@@ -1,7 +1,6 @@
 package hu.u_szeged.inf.aramis;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -12,12 +11,12 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
-import com.googlecode.androidannotations.annotations.Bean;
 import com.googlecode.androidannotations.annotations.Click;
 import com.googlecode.androidannotations.annotations.EActivity;
+import com.googlecode.androidannotations.annotations.RoboGuice;
 import com.googlecode.androidannotations.annotations.SeekBarProgressChange;
-import com.googlecode.androidannotations.annotations.UiThread;
 import com.googlecode.androidannotations.annotations.ViewById;
 
 import org.slf4j.Logger;
@@ -31,6 +30,7 @@ import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import static android.hardware.Camera.open;
 
 @EActivity(R.layout.activity_main)
+@RoboGuice
 public class MainActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainActivity.class);
     @ViewById(R.id.camera_preview)
@@ -41,10 +41,9 @@ public class MainActivity extends Activity {
     protected SeekBar brightness;
     @ViewById(R.id.button_capture)
     protected Button captureButton;
-    @Bean
+    @Inject
     protected TakePictureCallback takePictureCallback;
     private Camera camera;
-    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,15 +129,5 @@ public class MainActivity extends Activity {
             camera.release();
             camera = null;
         }
-    }
-
-    @UiThread
-    public void showProgress() {
-        ProgressDialog.show(this, "Processing...", "Please wait.");
-    }
-
-    @UiThread
-    public void dismissProgress() {
-        progressDialog.dismiss();
     }
 }

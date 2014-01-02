@@ -1,29 +1,21 @@
 package hu.u_szeged.inf.aramis.camera;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
-import com.googlecode.androidannotations.annotations.EBean;
 
-import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import hu.u_szeged.inf.aramis.camera.picture.Clustering;
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
-@EBean
 public class PictureEvaluator {
     private final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
 
@@ -49,8 +41,6 @@ public class PictureEvaluator {
             output.setPixel(coordinate.x, coordinate.y, color);
             table.put(coordinate.x, coordinate.y, false);
         }
-        LOGGER.info("Starting clusterize picture!");
-        clusterize(output, table);
         return output;
     }
 
@@ -62,21 +52,5 @@ public class PictureEvaluator {
         }
         Collections.sort(pixelsFromPictures);
         return pixelsFromPictures.get(pictures.size() / 2);
-    }
-
-    private void clusterize(Bitmap second, Table<Integer, Integer, Boolean> table) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        List<Cluster<Coordinate>> clusters = Clustering.clustering(1, 2).cluster(table);
-        stopwatch.stop();
-        LOGGER.info("Cluster's number {}", clusters.size());
-        Bitmap result = second.copy(second.getConfig(), true);
-        int count = 0;
-        for (Cluster<Coordinate> cluster : clusters) {
-            for (Coordinate coordinate : cluster.getPoints()) {
-                result.setPixel(coordinate.x, coordinate.y, Color.rgb(count * 10, count * 10, 0));
-            }
-            count++;
-        }
-        PictureSaver.save(Picture.picture(stopwatch.elapsed(TimeUnit.MILLISECONDS) + "ms_clusters_" + clusters.size(), result));
     }
 }

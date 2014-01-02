@@ -2,7 +2,6 @@ package hu.u_szeged.inf.aramis.camera;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.googlecode.androidannotations.annotations.EBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,6 @@ import hu.u_szeged.inf.aramis.camera.picture.DiffCounter;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
-@EBean
 public class PictureCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureCollector.class);
 

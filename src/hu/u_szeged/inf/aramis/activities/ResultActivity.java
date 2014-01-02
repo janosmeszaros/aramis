@@ -10,7 +10,12 @@ import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.Extra;
 import com.googlecode.androidannotations.annotations.ViewById;
 
+import org.apache.commons.math3.ml.clustering.Cluster;
+
+import java.util.List;
+
 import hu.u_szeged.inf.aramis.R;
+import hu.u_szeged.inf.aramis.model.Coordinate;
 
 @EActivity(R.layout.result_picture)
 public class ResultActivity extends Activity {
@@ -19,6 +24,9 @@ public class ResultActivity extends Activity {
 
     @Extra("bitmapPath")
     String bitmapPath;
+
+    @Extra("clusters")
+    List<Cluster<Coordinate>> clusters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
