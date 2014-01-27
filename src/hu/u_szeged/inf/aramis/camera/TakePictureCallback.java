@@ -32,6 +32,8 @@ import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Bitmap.createBitmap;
 import static hu.u_szeged.inf.aramis.camera.picture.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
@@ -53,6 +55,8 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     protected ClusterUtils clusterCounter;
     @Inject
     protected Clustering clustering;
+    @Inject
+    protected MultipleCounterScheduler multipleCounterScheduler;
     private int[] pixels;
     private Camera.Size size;
 
@@ -78,14 +82,17 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         try {
             //progressBarHandler.start();
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
-            Bitmap result = evaluator.evaluate(collector.getPictures(), diffCoordinates);
-            Picture resultPicture = picture(name + "_result", result);
-            savePicture(resultPicture);
+            List<Picture> pictures = collector.getPictures();
+            Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
+            Picture backgroundPicture = picture(name + "_background", result);
+            savePicture(backgroundPicture);
             collector.clear();
+            multipleCounterScheduler.schedule(backgroundPicture, pictures);
+            multipleCounterScheduler.getDiffCoordinates();
             List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
-            Picture clusteredPicture = clusterCounter.createBitmapFromClusters(resultPicture.bitmap, clusterList);
+            Picture clusteredPicture = clusterCounter.createBitmapFromClusters(backgroundPicture.bitmap, clusterList);
             //progressBarHandler.stop();
-            startResultActivity(resultPicture, clusterList, clusteredPicture);
+            startResultActivity(backgroundPicture, clusterList, clusteredPicture);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -108,7 +115,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         LOGGER.info("Start decoding picture");
         decodeYUV420SP(bytes, size.width, size.height);
         LOGGER.info("Picture decoded");
-        Picture picture = picture(name, Bitmap.createBitmap(pixels, size.width, size.height, Bitmap.Config.ARGB_8888));
+        Picture picture = picture(name, createBitmap(pixels, size.width, size.height, ARGB_8888));
         collector.addPicture(picture);
         //savePicture(picture);
     }
