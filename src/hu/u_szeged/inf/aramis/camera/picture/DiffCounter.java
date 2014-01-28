@@ -3,6 +3,7 @@ package hu.u_szeged.inf.aramis.camera.picture;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
             }
         }
         LOGGER.info("Diff created! {}", coordinates.size());
-        savePicture(Picture.picture(second.name + "_diff", diffBitmap));
+        savePicture(Picture.picture(Joiner.on("_").join(first.name, second.name, "diff"), diffBitmap));
         return coordinates;
     }
 

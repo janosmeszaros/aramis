@@ -1,5 +1,6 @@
 package hu.u_szeged.inf.aramis.camera;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import org.slf4j.Logger;
@@ -47,6 +48,6 @@ public class PictureCollector {
     }
 
     public List<Picture> getPictures() {
-        return pictures;
+        return ImmutableList.copyOf(pictures);
     }
 }

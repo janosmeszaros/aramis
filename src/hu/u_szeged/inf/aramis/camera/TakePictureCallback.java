@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -67,28 +68,29 @@ public class TakePictureCallback implements Camera.PreviewCallback {
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
-        String name = PictureSaver.DATE_TIME_FORMATTER.print(new DateTime());
+        String name = String.valueOf(collector.getSize());
         decodePicture(bytes, name);
         if (collector.getSize() < PICTURE_NUMBER) {
             sleep();
             camera.setOneShotPreviewCallback(this);
         } else {
-            evaluate(name);
+            evaluate();
         }
     }
 
     @Background
-    protected void evaluate(String name) {
+    protected void evaluate() {
         try {
             //progressBarHandler.start();
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
             List<Picture> pictures = collector.getPictures();
             Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
-            Picture backgroundPicture = picture(name + "_background", result);
+            Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
             savePicture(backgroundPicture);
             collector.clear();
             multipleCounterScheduler.schedule(backgroundPicture, pictures);
-            multipleCounterScheduler.getDiffCoordinates();
+            Map<Picture, Set<Coordinate>> multipleCounterSchedulerDiffCoordinates = multipleCounterScheduler.getDiffCoordinates();
+            LOGGER.info("Multiple diff coordinates number {}", multipleCounterSchedulerDiffCoordinates.size());
             List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
             Picture clusteredPicture = clusterCounter.createBitmapFromClusters(backgroundPicture.bitmap, clusterList);
             //progressBarHandler.stop();
