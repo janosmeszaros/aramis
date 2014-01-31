@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
+import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
 import hu.u_szeged.inf.aramis.activities.ResultActivity_;
 import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.picture.Clustering;
@@ -89,12 +90,13 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             savePicture(backgroundPicture);
             collector.clear();
             multipleCounterScheduler.schedule(backgroundPicture, pictures);
-            Map<Picture, Set<Coordinate>> multipleCounterSchedulerDiffCoordinates = multipleCounterScheduler.getDiffCoordinates();
-            LOGGER.info("Multiple diff coordinates number {}", multipleCounterSchedulerDiffCoordinates.size());
-            List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
-            Picture clusteredPicture = clusterCounter.createBitmapFromClusters(backgroundPicture.bitmap, clusterList);
+            Map<String, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
+            LOGGER.info("Multiple diff coordinates number {}", resultBitmaps.size());
+            //List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
+            //Picture clusteredPicture = clusterCounter.createBitmapFromClusters(backgroundPicture.bitmap, clusterList);
             //progressBarHandler.stop();
-            startResultActivity(backgroundPicture, clusterList, clusteredPicture);
+            //startResultActivity(backgroundPicture, clusterList, clusteredPicture);
+            startPagerActivity(resultBitmaps);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -112,6 +114,11 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         }
     }
 
+    @UiThread
+    protected void startPagerActivity(Map<String, Set<Coordinate>> resultBitmaps) {
+        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).start();
+    }
+
     @Background
     protected void decodePicture(byte[] bytes, String name) {
         LOGGER.info("Start decoding picture");
@@ -119,7 +126,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         LOGGER.info("Picture decoded");
         Picture picture = picture(name, createBitmap(pixels, size.width, size.height, ARGB_8888));
         collector.addPicture(picture);
-        //savePicture(picture);
+        savePicture(picture);
     }
 
     @Background
