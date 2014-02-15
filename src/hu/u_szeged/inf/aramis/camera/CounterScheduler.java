@@ -1,5 +1,6 @@
 package hu.u_szeged.inf.aramis.camera;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -33,7 +34,17 @@ public class CounterScheduler {
     }
 
     public void schedule(Picture one, Picture two) {
-        FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(new DiffCounter(countDown, one, two));
+        FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(new DiffCounter(countDown, one, two, ImmutableSet.<Coordinate>of()));
+        startTask(task);
+    }
+
+    public FutureTask<Set<Coordinate>> schedule(Picture one, Picture two, Set<Coordinate> differenceCoordinates) {
+        FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(new DiffCounter(countDown, one, two, differenceCoordinates));
+        startTask(task);
+        return task;
+    }
+
+    private void startTask(FutureTask<Set<Coordinate>> task) {
         tasks.add(task);
         executorService.execute(task);
     }

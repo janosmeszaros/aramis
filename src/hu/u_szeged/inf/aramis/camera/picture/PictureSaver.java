@@ -2,9 +2,12 @@ package hu.u_szeged.inf.aramis.camera.picture;
 
 import android.graphics.Bitmap;
 
+import com.google.common.base.Joiner;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -19,10 +22,11 @@ import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureSaver {
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyyMMMdd-HHmmssSS");
+    public static String ACTUAL_ALBUM = DATE_TIME_FORMATTER.print(new DateTime());
     public static final String ALBUM_NAME = "aramis";
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureSaver.class);
 
-    //TODO make it non static
+
     public static void save(Picture picture) {
         try {
             File file = FileUtils.getFile(getFilePathForPicture(picture));
@@ -40,6 +44,10 @@ public class PictureSaver {
     }
 
     public static String getFilePathForPicture(Picture picture) throws IOException {
-        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME), File.separator, picture.name, ".jpeg");
+        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(Joiner.on("/").join(ALBUM_NAME, ACTUAL_ALBUM)), File.separator, picture.name, ".jpeg");
+    }
+
+    public static void newAlbum() {
+        ACTUAL_ALBUM = DATE_TIME_FORMATTER.print(new DateTime());
     }
 }

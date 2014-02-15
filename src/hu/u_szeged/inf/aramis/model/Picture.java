@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class Picture {
+public class Picture implements Comparable {
     public final Bitmap bitmap;
     public final String name;
 
@@ -35,5 +35,10 @@ public class Picture {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return this.name.compareTo(((Picture) o).name);
     }
 }

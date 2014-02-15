@@ -28,6 +28,18 @@ public class PictureEvaluator {
         return output;
     }
 
+    public Bitmap evaluate(List<Picture> pictures) {
+        Bitmap original = pictures.get(pictures.size() - 1).bitmap;
+        Bitmap output = original.copy(original.getConfig(), true);
+        for (int x = 0; x < original.getWidth(); x++) {
+            for (int y = 0; y < original.getHeight(); y++) {
+                Integer color = evaluatePixel(pictures, x, y);
+                output.setPixel(x, y, color);
+            }
+        }
+        return output;
+    }
+
     public Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);

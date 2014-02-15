@@ -1,9 +1,6 @@
 package hu.u_szeged.inf.aramis.camera;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,11 +30,11 @@ public class MultipleCounterScheduler {
         return new MultipleCounterScheduler(counterScheduler);
     }
 
-    public void schedule(Picture background, List<Picture> pictures) {
+    public void schedule(Picture background, List<Picture> pictures, Set<Coordinate> differenceCoordinates) {
         for (Picture picture : pictures) {
             LOGGER.info("Schedule task for background and {}", picture.name);
-            counterScheduler.schedule(background, picture);
-            tasks.put(picture, counterScheduler.tasks.get(counterScheduler.tasks.size() - 1));
+            FutureTask<Set<Coordinate>> task = counterScheduler.schedule(background, picture, differenceCoordinates);
+            tasks.put(picture, task);
         }
     }
 
@@ -54,22 +51,14 @@ public class MultipleCounterScheduler {
     }
 
     private Map<String, Set<Coordinate>> sortResult(Map<Picture, Set<Coordinate>> result) {
-        ImmutableList<Map.Entry<Picture, Set<Coordinate>>> sortedResult = Ordering.natural().
-                onResultOf(new Function<Map.Entry<Picture, Set<Coordinate>>, String>() {
-                    @Override
-                    public String apply(Map.Entry<Picture, Set<Coordinate>> input) {
-                        return input.getKey().name;
-                    }
-                }).immutableSortedCopy(result.entrySet());
-
-        Map<String, Set<Coordinate>> sortedMap = Maps.newLinkedHashMap();
-        for (Map.Entry<Picture, Set<Coordinate>> entry : sortedResult) {
+        Map<String, Set<Coordinate>> transformedMap = Maps.newLinkedHashMap();
+        for (Map.Entry<Picture, Set<Coordinate>> entry : result.entrySet()) {
             try {
-                sortedMap.put(getFilePathForPicture(entry.getKey()), entry.getValue());
+                transformedMap.put(getFilePathForPicture(entry.getKey()), entry.getValue());
             } catch (IOException e) {
                 LOGGER.error("Cannot find picture on the device!", e);
             }
         }
-        return sortedMap;
+        return transformedMap;
     }
 }

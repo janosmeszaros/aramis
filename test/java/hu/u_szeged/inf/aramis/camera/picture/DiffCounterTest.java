@@ -3,6 +3,8 @@ package hu.u_szeged.inf.aramis.camera.picture;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +44,7 @@ public class DiffCounterTest {
         Picture picture1 = createSamplePicture(20, 30, 40);
         picture1.bitmap.setPixel(1, 1, Color.rgb(20 + DiffCounter.BORDER + 1, 30, 40));
         Picture picture2 = createSamplePicture(20, 30, 40);
-        underTest = new DiffCounter(countDownLatch, picture1, picture2);
+        underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
 
@@ -55,7 +57,7 @@ public class DiffCounterTest {
     public void testCallWhenNoDiffIsPresent() {
         Picture picture1 = createSamplePicture(20, 30, 40);
         Picture picture2 = createSamplePicture(20, 30, 40);
-        underTest = new DiffCounter(countDownLatch, picture1, picture2);
+        underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
 
@@ -69,7 +71,7 @@ public class DiffCounterTest {
         picture1.bitmap.setPixel(1, 1, Color.rgb(20, 30, 40 + DiffCounter.BORDER + 1));
         Picture picture2 = createSamplePicture(20, 30, 40);
         picture2.bitmap.setPixel(0, 1, Color.rgb(20, 30 + DiffCounter.BORDER + 1, 40));
-        underTest = new DiffCounter(countDownLatch, picture1, picture2);
+        underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
 
@@ -83,7 +85,7 @@ public class DiffCounterTest {
     public void testCallWhenThereIsDifferenceInPictureWeight() {
         Picture picture1 = createSamplePicture(20, 30, 40);
         Picture picture2 = picture("name", Bitmap.createBitmap(2, 3, Bitmap.Config.ARGB_4444));
-        underTest = new DiffCounter(countDownLatch, picture1, picture2);
+        underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         underTest.call();
     }
@@ -94,7 +96,7 @@ public class DiffCounterTest {
     public void testCallWhenThereIsDifferenceInPictureHeight() {
         Picture picture1 = createSamplePicture(20, 30, 40);
         Picture picture2 = picture("name", Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_4444));
-        underTest = new DiffCounter(countDownLatch, picture1, picture2);
+        underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         underTest.call();
     }

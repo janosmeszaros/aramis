@@ -26,6 +26,10 @@ public class PictureCollector {
         return new PictureCollector(counterScheduler);
     }
 
+    public void addPictureWithoutSchedule(Picture picture) {
+        pictures.add(picture);
+    }
+
     public void addPicture(Picture picture) {
         pictures.add(picture);
         int actualSize = pictures.size();

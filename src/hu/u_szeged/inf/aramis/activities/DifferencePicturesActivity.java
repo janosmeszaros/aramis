@@ -33,7 +33,6 @@ public class DifferencePicturesActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(DifferencePicturesActivity.class);
     @ViewById
     ViewPager pager;
-
     @Extra("resultBitmapPaths")
     Map<String, Set<Coordinate>> resultBitmapPaths;
 
@@ -49,7 +48,7 @@ public class DifferencePicturesActivity extends Activity {
     }
 
     private Map<Picture, Set<Coordinate>> transformMap() {
-        Map<Picture, Set<Coordinate>> transformed = Maps.newLinkedHashMap();
+        Map<Picture, Set<Coordinate>> transformed = Maps.newTreeMap();
         int counter = 0;
         for (Map.Entry<String, Set<Coordinate>> entry : resultBitmapPaths.entrySet()) {
             LOGGER.info("Get picture from {}", entry.getKey());

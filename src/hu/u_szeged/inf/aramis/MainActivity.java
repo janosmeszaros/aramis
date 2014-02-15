@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
     public void takePicture() {
         LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        PictureSaver.newAlbum();
         camera.setOneShotPreviewCallback(takePictureCallback);
     }
 

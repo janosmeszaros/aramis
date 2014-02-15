@@ -89,7 +89,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
             savePicture(backgroundPicture);
             collector.clear();
-            multipleCounterScheduler.schedule(backgroundPicture, pictures);
+            multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
             Map<String, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
             LOGGER.info("Multiple diff coordinates number {}", resultBitmaps.size());
             //List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));

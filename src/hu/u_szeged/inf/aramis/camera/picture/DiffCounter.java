@@ -28,39 +28,58 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
     private final CountDownLatch countDownLatch;
     private final Picture first;
     private final Picture second;
+    private final Set<Coordinate> allDifferenceCoordinates;
 
-    public DiffCounter(CountDownLatch countDownLatch, Picture first, Picture second) {
+    public DiffCounter(CountDownLatch countDownLatch, Picture first, Picture second, Set<Coordinate> allDifferenceCoordinates) {
+        if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
+            throw new IllegalArgumentException("There are differences in the two picture dimensions");
+        }
         this.countDownLatch = countDownLatch;
         this.first = first;
         this.second = second;
+        this.allDifferenceCoordinates = allDifferenceCoordinates;
     }
 
     @Override
     public Set<Coordinate> call() {
-        Set<Coordinate> coordinates = getDiffPicture(first, second);
+        Set<Coordinate> coordinates;
+        if (allDifferenceCoordinates.isEmpty()) {
+            coordinates = getDiffCoordinatesFromAllThePixels();
+        } else {
+            coordinates = getDiffCoordinatesFromDiffs();
+        }
         countDownLatch.countDown();
         return coordinates;
     }
 
-    private Set<Coordinate> getDiffPicture(Picture first, Picture second) {
+    private Set<Coordinate> getDiffCoordinatesFromAllThePixels() {
         LOGGER.info("Start creating diff");
-        if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
-            throw new IllegalArgumentException("There are differences in the two picture dimensions");
-        }
         Bitmap diffBitmap = second.bitmap.copy(second.bitmap.getConfig(), true);
-        int width = first.bitmap.getWidth();
-        int height = first.bitmap.getHeight();
         Set<Coordinate> coordinates = Sets.newLinkedHashSet();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int totalDiff = countTotalDiff(first.bitmap.getPixel(x, y), second.bitmap.getPixel(x, y));
-                if (totalDiff > BORDER) {
+        for (int x = 0; x < first.bitmap.getWidth(); x++) {
+            for (int y = 0; y < first.bitmap.getHeight(); y++) {
+                if (countTotalDiff(first.bitmap.getPixel(x, y), second.bitmap.getPixel(x, y)) > BORDER) {
                     coordinates.add(coordinate(x, y));
                     diffBitmap.setPixel(x, y, Color.BLUE);
                 }
             }
         }
-        LOGGER.info("Diff created! {}", coordinates.size());
+        LOGGER.info("Number of differences: {}", coordinates.size());
+        savePicture(Picture.picture(Joiner.on("_").join(first.name, second.name, "diff"), diffBitmap));
+        return coordinates;
+    }
+
+    private Set<Coordinate> getDiffCoordinatesFromDiffs() {
+        LOGGER.info("Start creating diff with given coordinates");
+        Bitmap diffBitmap = second.bitmap.copy(second.bitmap.getConfig(), true);
+        Set<Coordinate> coordinates = Sets.newLinkedHashSet();
+        for (Coordinate coordinate : allDifferenceCoordinates) {
+            if (countTotalDiff(first.bitmap.getPixel(coordinate.x, coordinate.y), second.bitmap.getPixel(coordinate.x, coordinate.y)) > BORDER) {
+                coordinates.add(coordinate(coordinate.x, coordinate.y));
+                diffBitmap.setPixel(coordinate.x, coordinate.y, Color.BLUE);
+            }
+        }
+        LOGGER.info("Number of differences: {}", coordinates.size());
         savePicture(Picture.picture(Joiner.on("_").join(first.name, second.name, "diff"), diffBitmap));
         return coordinates;
     }
