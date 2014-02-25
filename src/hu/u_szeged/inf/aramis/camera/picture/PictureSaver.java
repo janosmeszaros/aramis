@@ -30,7 +30,6 @@ public class PictureSaver {
     public static void save(Picture picture) {
         try {
             File file = FileUtils.getFile(getFilePathForPicture(picture));
-            LOGGER.info("Trying to save picture to {}", file.getAbsolutePath());
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 picture.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);

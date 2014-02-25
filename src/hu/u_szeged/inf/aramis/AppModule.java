@@ -17,6 +17,7 @@ import hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
+import hu.u_szeged.inf.aramis.camera.picture.CannyEdgeDetector;
 import hu.u_szeged.inf.aramis.camera.picture.Clustering;
 
 import static hu.u_szeged.inf.aramis.camera.CounterScheduler.counterScheduler;
@@ -30,6 +31,7 @@ public class AppModule implements Module {
         binder.bind(PictureEvaluator.class).in(Scopes.SINGLETON);
         binder.bind(ClusterUtils.class).in(Scopes.SINGLETON);
         binder.bind(ProgressBarHandler.class).in(Scopes.SINGLETON);
+        binder.bind(CannyEdgeDetector.class).in(Scopes.SINGLETON);
     }
 
     @Provides

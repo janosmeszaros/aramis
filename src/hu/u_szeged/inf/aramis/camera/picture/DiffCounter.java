@@ -23,7 +23,7 @@ import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 import static java.lang.Math.abs;
 
 public class DiffCounter implements Callable<Set<Coordinate>> {
-    public static final int BORDER = 100;
+    public static final int BORDER = 50;
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffCounter.class);
     private final CountDownLatch countDownLatch;
     private final Picture first;
@@ -89,9 +89,12 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
     }
 
     private synchronized int countTotalDiff(int firstPixel, int secondPixel) {
-        int redDelta = abs(red(firstPixel) - red(secondPixel));
-        int greenDelta = abs(green(firstPixel) - green(secondPixel));
-        int blueDelta = abs(blue(firstPixel) - blue(secondPixel));
-        return redDelta + greenDelta + blueDelta;
+        int luminanceFirst = luminance(red(firstPixel), green(firstPixel), blue(firstPixel));
+        int luminanceSecond = luminance(red(secondPixel), green(secondPixel), blue(secondPixel));
+        return abs(luminanceFirst - luminanceSecond);
+    }
+
+    private int luminance(int r, int g, int b) {
+        return Math.round(0.299f * r + 0.587f * g + 0.114f * b);
     }
 }

@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterInject;
@@ -20,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,20 +33,25 @@ import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
 import hu.u_szeged.inf.aramis.activities.ResultActivity_;
 import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
+import hu.u_szeged.inf.aramis.camera.picture.CannyEdgeDetector;
 import hu.u_szeged.inf.aramis.camera.picture.Clustering;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.Rectangle;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.createBitmap;
 import static hu.u_szeged.inf.aramis.camera.picture.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
+import static java.math.RoundingMode.HALF_UP;
 
 @EBean
 public class TakePictureCallback implements Camera.PreviewCallback {
     public static final int PICTURE_NUMBER = 5;
+    public static final BigDecimal SIMILARITY = new BigDecimal(0.8);
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
+    public static final int BORDER = 10;
     @App
     protected MainApplication application;
     @Inject
@@ -51,6 +60,8 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     protected PictureCollector collector;
     @Inject
     protected PictureEvaluator evaluator;
+    @Inject
+    protected CannyEdgeDetector detector;
     @Inject
     protected ProgressBarHandler progressBarHandler;
     @Inject
@@ -90,19 +101,121 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             savePicture(backgroundPicture);
             collector.clear();
             multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
-            Map<String, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
-            LOGGER.info("Multiple diff coordinates number {}", resultBitmaps.size());
-            //List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(diffCoordinates));
-            //Picture clusteredPicture = clusterCounter.createBitmapFromClusters(backgroundPicture.bitmap, clusterList);
+            Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
+            Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
+            createEdges(clustersForPictures);
             //progressBarHandler.stop();
-            //startResultActivity(backgroundPicture, clusterList, clusteredPicture);
-            startPagerActivity(resultBitmaps);
+            startPagerActivity(transformResult(resultBitmaps));
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
             LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
         }
 
+    }
+
+    private void createEdges(Map<Picture, List<Cluster<Coordinate>>> clustersForPictures) {
+        for (Map.Entry<Picture, List<Cluster<Coordinate>>> entry : clustersForPictures.entrySet()) {
+            List<Cluster<Coordinate>> clusterList = entry.getValue();
+            Iterator<Cluster<Coordinate>> iterator = clusterList.iterator();
+            while (iterator.hasNext()) {
+                Cluster<Coordinate> actual = iterator.next();
+                Optional<Rectangle> edges = findEdges(actual);
+                if (edges.isPresent()) {
+                    String edgesName = String.format("edges_%d_%d_%d_%d", edges.get().minX, edges.get().minY, edges.get().maxX, edges.get().maxY);
+                    LOGGER.info(edgesName);
+                    Bitmap bitmap = cutPart(entry.getKey().bitmap, edges.get());
+                    savePicture(picture(String.format("bitmap_%d_%d_%d_%d", edges.get().minX, edges.get().minY, edges.get().maxX - edges.get().minX, edges.get().maxY - edges.get().minY), bitmap));
+                    savePicture(picture(edgesName, detector.process(bitmap)));
+                } else {
+                    iterator.remove();
+                }
+            }
+        }
+
+    }
+
+    private Bitmap cutPart(Bitmap bitmap, Rectangle edges) {
+        int minX = edges.minX - BORDER;
+        int minY = edges.minY - BORDER;
+        int maxX = edges.maxX + BORDER;
+        int maxY = edges.maxY + BORDER;
+        if (minX <= 0) {
+            minX = 1;
+        }
+        if (minY <= 0) {
+            minY = 1;
+        }
+        if (maxX > bitmap.getWidth()) {
+            maxX = bitmap.getWidth();
+        }
+        if (maxY > bitmap.getHeight()) {
+            maxY = bitmap.getHeight();
+        }
+        LOGGER.info("Crop image with values: {} {} {} {}", new Object[]{minX, minY, maxX, maxY});
+        return Bitmap.createBitmap(bitmap, minX, minY, maxX - minX, maxY - minY);
+    }
+
+    private Optional<Rectangle> findEdges(Cluster<Coordinate> cluster) {
+        int minX = 1000;
+        int minY = 1000;
+        int maxX = 0;
+        int maxY = 0;
+
+        for (Coordinate coordinate : cluster.getPoints()) {
+            if (coordinate.x < minX) {
+                minX = coordinate.x;
+            }
+            if (coordinate.x > maxX) {
+                maxX = coordinate.x;
+            }
+            if (coordinate.y < minY) {
+                minY = coordinate.y;
+            }
+            if (coordinate.y > maxY) {
+                maxY = coordinate.y;
+            }
+        }
+        Rectangle rectangle = Rectangle.rectangle(minX, minY, maxX, maxY);
+        BigDecimal boundingArea = rectangle.getArea();
+        BigDecimal area = new BigDecimal(cluster.getPoints().size());
+        LOGGER.info("Divide area {} with {})", boundingArea, area);
+        BigDecimal divide = area.divide(boundingArea, 4, HALF_UP);
+        LOGGER.info("Similarity of {}  = {}", rectangle, divide);
+        if (area.compareTo(new BigDecimal(100)) < 1 || divide.compareTo(SIMILARITY) > -1) {
+            return Optional.absent();
+        } else {
+            return Optional.of(rectangle);
+        }
+    }
+
+    private Map<String, Set<Coordinate>> transformResult(Map<Picture, Set<Coordinate>> result) {
+        Map<String, Set<Coordinate>> transformedMap = Maps.newLinkedHashMap();
+        for (Map.Entry<Picture, Set<Coordinate>> entry : result.entrySet()) {
+            try {
+                transformedMap.put(getFilePathForPicture(entry.getKey()), entry.getValue());
+            } catch (IOException e) {
+                LOGGER.error("Cannot find picture on the device!", e);
+            }
+        }
+        return transformedMap;
+    }
+
+    private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Set<Coordinate>> resultBitmaps) {
+        Map<Picture, List<Cluster<Coordinate>>> clusterisedPictures = Maps.newLinkedHashMap();
+        for (Map.Entry<Picture, Set<Coordinate>> entry : resultBitmaps.entrySet()) {
+            List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(entry.getValue()));
+            clusterisedPictures.put(entry.getKey(), clusterList);
+        }
+        return clusterisedPictures;
+    }
+
+    private Table<Integer, Integer, Boolean> transformSet(Set<Coordinate> diffCoordinates) {
+        Table<Integer, Integer, Boolean> table = HashBasedTable.create(diffCoordinates.size(), diffCoordinates.size());
+        for (Coordinate coordinate : diffCoordinates) {
+            table.put(coordinate.x, coordinate.y, false);
+        }
+        return table;
     }
 
     @UiThread
@@ -132,14 +245,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Background
     protected void savePicture(Picture picture) {
         PictureSaver.save(picture);
-    }
-
-    private Table<Integer, Integer, Boolean> transformSet(Set<Coordinate> diffCoordinates) {
-        Table<Integer, Integer, Boolean> table = HashBasedTable.create(diffCoordinates.size(), diffCoordinates.size());
-        for (Coordinate coordinate : diffCoordinates) {
-            table.put(coordinate.x, coordinate.y, false);
-        }
-        return table;
     }
 
     private void sleep() {
