@@ -10,8 +10,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import hu.u_szeged.inf.aramis.Utils.ClusterUtils;
 import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
-import hu.u_szeged.inf.aramis.camera.ClusterUtils;
 import hu.u_szeged.inf.aramis.camera.CounterScheduler;
 import hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.PictureCollector;
@@ -19,6 +19,11 @@ import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 import hu.u_szeged.inf.aramis.camera.picture.CannyEdgeDetector;
 import hu.u_szeged.inf.aramis.camera.picture.Clustering;
+import hu.u_szeged.inf.aramis.camera.picture.process.ClusterComparator;
+import hu.u_szeged.inf.aramis.camera.picture.process.MomentsCounter;
+import hu.u_szeged.inf.aramis.camera.picture.process.MomentsDistanceCounter;
+import hu.u_szeged.inf.aramis.camera.picture.process.PairMatcher;
+import hu.u_szeged.inf.aramis.camera.picture.process.SimilarityDetector;
 
 import static hu.u_szeged.inf.aramis.camera.CounterScheduler.counterScheduler;
 import static hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler.multipleCounterScheduler;
@@ -26,6 +31,9 @@ import static hu.u_szeged.inf.aramis.camera.PictureCollector.pictureCollector;
 import static hu.u_szeged.inf.aramis.camera.picture.Clustering.clustering;
 
 public class AppModule implements Module {
+    public static final double MOMENT_BORDER = 0.8;
+    public static final double DISTANCE_BORDER = 250.0;
+
     @Override
     public void configure(Binder binder) {
         binder.bind(PictureEvaluator.class).in(Scopes.SINGLETON);
@@ -68,5 +76,37 @@ public class AppModule implements Module {
     @Singleton
     private MultipleCounterScheduler multipleCounterSchedulerProvider(CounterScheduler counterScheduler) {
         return multipleCounterScheduler(counterScheduler);
+    }
+
+    @Provides
+    @Singleton
+    private ClusterComparator clusterComparator(MomentsCounter momentsCounter,
+                                                MomentsDistanceCounter distanceCounter,
+                                                PairMatcher pairMatcher) {
+        return new ClusterComparator(momentsCounter, distanceCounter, pairMatcher);
+    }
+
+    @Provides
+    @Singleton
+    private MomentsCounter momentsCounter() {
+        return new MomentsCounter();
+    }
+
+    @Provides
+    @Singleton
+    private MomentsDistanceCounter momentsDistanceCounter() {
+        return new MomentsDistanceCounter();
+    }
+
+    @Provides
+    @Singleton
+    private PairMatcher pairMatcher(SimilarityDetector detector) {
+        return new PairMatcher(detector);
+    }
+
+    @Provides
+    @Singleton
+    private SimilarityDetector similarityDetector() {
+        return new SimilarityDetector(DISTANCE_BORDER, MOMENT_BORDER);
     }
 }

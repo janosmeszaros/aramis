@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera;
+package hu.u_szeged.inf.aramis.Utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -10,6 +10,7 @@ import java.util.List;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.Rectangle;
 
 public class ClusterUtils {
     public Picture createBitmapFromClusters(Bitmap original, List<Cluster<Coordinate>> clusters) {
@@ -24,5 +25,29 @@ public class ClusterUtils {
         Picture picture = Picture.picture("clusters_" + clusters.size(), result);
         PictureSaver.save(picture);
         return picture;
+    }
+
+
+    public static Rectangle findBoundingBox(List<Coordinate> coordinates) {
+        int minX = 1000;
+        int minY = 1000;
+        int maxX = 0;
+        int maxY = 0;
+
+        for (Coordinate coordinate : coordinates) {
+            if (coordinate.x < minX) {
+                minX = coordinate.x;
+            }
+            if (coordinate.x > maxX) {
+                maxX = coordinate.x;
+            }
+            if (coordinate.y < minY) {
+                minY = coordinate.y;
+            }
+            if (coordinate.y > maxY) {
+                maxY = coordinate.y;
+            }
+        }
+        return Rectangle.rectangle(minX, minY, maxX, maxY);
     }
 }

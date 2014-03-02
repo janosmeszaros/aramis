@@ -6,6 +6,7 @@ import android.hardware.Camera;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
@@ -36,14 +37,19 @@ import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.picture.CannyEdgeDetector;
 import hu.u_szeged.inf.aramis.camera.picture.Clustering;
 import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.picture.process.ClusterComparator;
 import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.PictureEdges;
 import hu.u_szeged.inf.aramis.model.Rectangle;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.createBitmap;
+import static hu.u_szeged.inf.aramis.Utils.MapUtils.transformPictureMapToString;
 import static hu.u_szeged.inf.aramis.camera.picture.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
+import static hu.u_szeged.inf.aramis.model.PictureEdges.pictureEdges;
 import static java.math.RoundingMode.HALF_UP;
 
 @EBean
@@ -65,7 +71,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Inject
     protected ProgressBarHandler progressBarHandler;
     @Inject
-    protected ClusterUtils clusterCounter;
+    protected ClusterComparator clusterComparator;
     @Inject
     protected Clustering clustering;
     @Inject
@@ -103,19 +109,23 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
             Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
             Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
-            createEdges(clustersForPictures);
+            //Map<Picture, List<PictureEdges>> edges = createEdges(clustersForPictures);
+            //Map<Picture, List<PictureEdges>> sortedEdgeMap = sortMapWithPicture(edges);
+            Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
             //progressBarHandler.stop();
-            startPagerActivity(transformResult(resultBitmaps));
+            startPagerActivity(transformPictureMapToString(pictureListMap));
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
             LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
         }
-
     }
 
-    private void createEdges(Map<Picture, List<Cluster<Coordinate>>> clustersForPictures) {
+
+    private Map<Picture, List<PictureEdges>> createEdges(Map<Picture, List<Cluster<Coordinate>>> clustersForPictures) {
+        Map<Picture, List<PictureEdges>> result = Maps.newLinkedHashMap();
         for (Map.Entry<Picture, List<Cluster<Coordinate>>> entry : clustersForPictures.entrySet()) {
+            List<PictureEdges> edgeList = Lists.newArrayList();
             List<Cluster<Coordinate>> clusterList = entry.getValue();
             Iterator<Cluster<Coordinate>> iterator = clusterList.iterator();
             while (iterator.hasNext()) {
@@ -127,12 +137,14 @@ public class TakePictureCallback implements Camera.PreviewCallback {
                     Bitmap bitmap = cutPart(entry.getKey().bitmap, edges.get());
                     savePicture(picture(String.format("bitmap_%d_%d_%d_%d", edges.get().minX, edges.get().minY, edges.get().maxX - edges.get().minX, edges.get().maxY - edges.get().minY), bitmap));
                     savePicture(picture(edgesName, detector.process(bitmap)));
+                    edgeList.add(pictureEdges(detector.getEdgeCoordinates()));
                 } else {
                     iterator.remove();
                 }
             }
+            result.put(entry.getKey(), edgeList);
         }
-
+        return result;
     }
 
     private Bitmap cutPart(Bitmap bitmap, Rectangle edges) {
@@ -189,18 +201,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         }
     }
 
-    private Map<String, Set<Coordinate>> transformResult(Map<Picture, Set<Coordinate>> result) {
-        Map<String, Set<Coordinate>> transformedMap = Maps.newLinkedHashMap();
-        for (Map.Entry<Picture, Set<Coordinate>> entry : result.entrySet()) {
-            try {
-                transformedMap.put(getFilePathForPicture(entry.getKey()), entry.getValue());
-            } catch (IOException e) {
-                LOGGER.error("Cannot find picture on the device!", e);
-            }
-        }
-        return transformedMap;
-    }
-
     private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Set<Coordinate>> resultBitmaps) {
         Map<Picture, List<Cluster<Coordinate>>> clusterisedPictures = Maps.newLinkedHashMap();
         for (Map.Entry<Picture, Set<Coordinate>> entry : resultBitmaps.entrySet()) {
@@ -228,7 +228,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     }
 
     @UiThread
-    protected void startPagerActivity(Map<String, Set<Coordinate>> resultBitmaps) {
+    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps) {
         DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).start();
     }
 

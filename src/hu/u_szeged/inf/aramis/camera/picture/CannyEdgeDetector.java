@@ -2,11 +2,17 @@ package hu.u_szeged.inf.aramis.camera.picture;
 
 import android.graphics.Bitmap;
 
+import com.google.common.collect.Lists;
+
 import java.util.Arrays;
+import java.util.List;
+
+import hu.u_szeged.inf.aramis.model.Coordinate;
 
 import static android.graphics.Color.blue;
 import static android.graphics.Color.green;
 import static android.graphics.Color.red;
+import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 
 public class CannyEdgeDetector {
     private final static float GAUSSIAN_CUT_OFF = 0.005f;
@@ -28,6 +34,7 @@ public class CannyEdgeDetector {
     private float[] yConv;
     private float[] xGradient;
     private float[] yGradient;
+    private List<Coordinate> edgeCoordinates;
 
     public CannyEdgeDetector() {
         lowThreshold = 2.5f;
@@ -35,6 +42,10 @@ public class CannyEdgeDetector {
         gaussianKernelRadius = 2f;
         gaussianKernelWidth = 16;
         contrastNormalized = false;
+    }
+
+    public List<Coordinate> getEdgeCoordinates() {
+        return edgeCoordinates;
     }
 
     public void setLowThreshold(float threshold) {
@@ -89,6 +100,7 @@ public class CannyEdgeDetector {
             yConv = new float[picsize];
             xGradient = new float[picsize];
             yGradient = new float[picsize];
+            edgeCoordinates = Lists.newArrayList();
         }
     }
 
@@ -303,7 +315,12 @@ public class CannyEdgeDetector {
 
     private void thresholdEdges() {
         for (int i = 0; i < picsize; i++) {
-            data[i] = data[i] > 0 ? -1 : 0xff000000;
+            if (data[i] > 0) {
+                data[i] = -1;
+                edgeCoordinates.add(coordinate(i % width, i / width));
+            } else {
+                data[i] = 0xff000000;
+            }
         }
     }
 
