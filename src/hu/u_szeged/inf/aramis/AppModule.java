@@ -6,6 +6,7 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 
+import java.math.BigDecimal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +24,7 @@ import hu.u_szeged.inf.aramis.camera.picture.process.ClusterComparator;
 import hu.u_szeged.inf.aramis.camera.picture.process.MomentsCounter;
 import hu.u_szeged.inf.aramis.camera.picture.process.MomentsDistanceCounter;
 import hu.u_szeged.inf.aramis.camera.picture.process.PairMatcher;
+import hu.u_szeged.inf.aramis.camera.picture.process.PreFilter;
 import hu.u_szeged.inf.aramis.camera.picture.process.SimilarityDetector;
 
 import static hu.u_szeged.inf.aramis.camera.CounterScheduler.counterScheduler;
@@ -31,8 +33,11 @@ import static hu.u_szeged.inf.aramis.camera.PictureCollector.pictureCollector;
 import static hu.u_szeged.inf.aramis.camera.picture.Clustering.clustering;
 
 public class AppModule implements Module {
-    public static final double MOMENT_BORDER = 0.8;
+    public static final double MOMENT_BORDER = 4.0;
     public static final double DISTANCE_BORDER = 250.0;
+    public static final double AREA_DIFFERENCE_BORDER = 2000.0;
+    public static final BigDecimal PRE_FILTER_SIMILARITY_BORDER = new BigDecimal(0.85);
+    public static final BigDecimal PRE_FILTER_AREA_BORDER = new BigDecimal(100);
 
     @Override
     public void configure(Binder binder) {
@@ -82,8 +87,9 @@ public class AppModule implements Module {
     @Singleton
     private ClusterComparator clusterComparator(MomentsCounter momentsCounter,
                                                 MomentsDistanceCounter distanceCounter,
-                                                PairMatcher pairMatcher) {
-        return new ClusterComparator(momentsCounter, distanceCounter, pairMatcher);
+                                                PairMatcher pairMatcher,
+                                                PreFilter preFilter) {
+        return new ClusterComparator(momentsCounter, distanceCounter, pairMatcher, preFilter);
     }
 
     @Provides
@@ -107,6 +113,12 @@ public class AppModule implements Module {
     @Provides
     @Singleton
     private SimilarityDetector similarityDetector() {
-        return new SimilarityDetector(DISTANCE_BORDER, MOMENT_BORDER);
+        return new SimilarityDetector(DISTANCE_BORDER, MOMENT_BORDER, AREA_DIFFERENCE_BORDER);
+    }
+
+    @Provides
+    @Singleton
+    private PreFilter preFilter() {
+        return new PreFilter(PRE_FILTER_AREA_BORDER, PRE_FILTER_SIMILARITY_BORDER);
     }
 }

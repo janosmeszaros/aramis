@@ -13,18 +13,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import hu.u_szeged.inf.aramis.R;
-import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class FullScreenImageAdapter extends PagerAdapter {
-    private Map<Picture, Set<Coordinate>> pictures;
+    private List<Bitmap> pictures;
     private Activity activity;
 
-    public FullScreenImageAdapter(Map<Picture, Set<Coordinate>> pictures, Activity activity) {
+    public FullScreenImageAdapter(List<Bitmap> pictures, Activity activity) {
         this.pictures = pictures;
         this.activity = activity;
     }
@@ -52,7 +52,7 @@ public class FullScreenImageAdapter extends PagerAdapter {
         imgDisplay = (ImageView) viewLayout.findViewById(R.id.imgDisplay);
         btnClose = (Button) viewLayout.findViewById(R.id.btnClose);
 
-        imgDisplay.setImageBitmap(getElementAt(pictures, position));
+        imgDisplay.setImageBitmap(pictures.get(position));
 
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +65,7 @@ public class FullScreenImageAdapter extends PagerAdapter {
         return viewLayout;
     }
 
-    private Bitmap getElementAt(Map<Picture, Set<Coordinate>> pictures, int position) {
+    private Bitmap getElementAt(Map<Picture, List<Pair>> pictures, int position) {
         int i = 0;
         for (Picture picture : pictures.keySet()) {
             if (i == position) {

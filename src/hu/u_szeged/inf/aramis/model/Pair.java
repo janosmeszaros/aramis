@@ -7,7 +7,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.math3.ml.clustering.Cluster;
 
-public class Pair {
+import java.io.Serializable;
+
+public class Pair implements Serializable {
     public final Cluster<Coordinate> first;
     public final Optional<Cluster<Coordinate>> second;
 

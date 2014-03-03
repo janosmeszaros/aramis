@@ -8,6 +8,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import hu.u_szeged.inf.aramis.model.Coordinate;
 
+import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -20,7 +21,7 @@ public class SimilarityDetectorTest {
 
     @Before
     public void setUp() throws Exception {
-        underTest = new SimilarityDetector(2.0, 0.8);
+        underTest = new SimilarityDetector(2.0, 0.8, 2.0);
     }
 
     @Test
@@ -51,12 +52,28 @@ public class SimilarityDetectorTest {
         assertThat(similar, equalTo(false));
     }
 
+    @Test
+    public void testIsSimilarWhenMomentsTrueDistanceTrueAreaDiffTrue() {
+        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.9);
+
+        assertThat(similar, equalTo(true));
+    }
+
+    @Test
+    public void testIsSimilarWhenMomentsTrueDistanceTrueAreaDiffFalse() {
+        cluster1.addPoint(coordinate(2, 2));
+
+        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.9);
+
+        assertThat(similar, equalTo(false));
+    }
+
     private Cluster<Coordinate> createCluster(int i) {
         Cluster<Coordinate> cluster = new Cluster<Coordinate>();
-        cluster.addPoint(Coordinate.coordinate(i, i));
-        cluster.addPoint(Coordinate.coordinate(i + 1, i + 1));
-        cluster.addPoint(Coordinate.coordinate(i + 1, i));
-        cluster.addPoint(Coordinate.coordinate(i, i + 1));
+        cluster.addPoint(coordinate(i, i));
+        cluster.addPoint(coordinate(i + 1, i + 1));
+        cluster.addPoint(coordinate(i + 1, i));
+        cluster.addPoint(coordinate(i, i + 1));
         return cluster;
     }
 }

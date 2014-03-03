@@ -9,6 +9,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -21,14 +23,17 @@ import hu.u_szeged.inf.aramis.model.Picture;
 import static hu.u_szeged.inf.aramis.Utils.MapUtils.sortMapWithPicture;
 
 public class ClusterComparator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterComparator.class);
     private final MomentsCounter momentsCounter;
     private final MomentsDistanceCounter distanceCounter;
     private final PairMatcher pairMatcher;
+    private final PreFilter preFilter;
 
-    public ClusterComparator(MomentsCounter momentsCounter, MomentsDistanceCounter counter, PairMatcher pairMatcher) {
+    public ClusterComparator(MomentsCounter momentsCounter, MomentsDistanceCounter counter, PairMatcher pairMatcher, PreFilter preFilter) {
         this.momentsCounter = momentsCounter;
         this.distanceCounter = counter;
         this.pairMatcher = pairMatcher;
+        this.preFilter = preFilter;
     }
 
     public Map<Picture, List<Pair>> countSimilarity(
@@ -42,19 +47,25 @@ public class ClusterComparator {
     private Map<Picture, List<Pair>> countResult(Map<Picture, List<ClusterWithMoments>> sortedMap) {
         Map<Picture, List<Pair>> result = Maps.newLinkedHashMap();
         List<ClusterWithMoments> previousMomentsList = Lists.newArrayList();
+        Picture previousPicture = null;
         for (Map.Entry<Picture, List<ClusterWithMoments>> entry : sortedMap.entrySet()) {
             List<ClusterWithMoments> actualMomentsList = entry.getValue();
-            Picture actualPicture = entry.getKey();
             if (previousMomentsList.isEmpty()) {
+                if (previousPicture != null) {
+                    result.put(previousPicture, Lists.<Pair>newArrayList());
+                }
                 previousMomentsList = actualMomentsList;
+                previousPicture = entry.getKey();
                 continue;
             } else {
                 Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> table =
                         countMomentsDistances(previousMomentsList, actualMomentsList);
                 if (!table.isEmpty()) {
-                    result.put(actualPicture, pairMatcher.findSimilarPairs(table));
+                    List<Pair> similarPairs = pairMatcher.findSimilarPairs(table);
+                    result.put(previousPicture, similarPairs);
+                    LOGGER.info("Similar pairs for {} : {}", previousPicture, similarPairs);
                 } else {
-                    result.put(actualPicture, Lists.transform(actualMomentsList, new Function<ClusterWithMoments, Pair>() {
+                    result.put(previousPicture, Lists.transform(actualMomentsList, new Function<ClusterWithMoments, Pair>() {
                         @Override
                         public Pair apply(ClusterWithMoments input) {
                             return Pair.pair(input.cluster);
@@ -62,6 +73,7 @@ public class ClusterComparator {
                     }));
                 }
                 previousMomentsList = actualMomentsList;
+                previousPicture = entry.getKey();
             }
         }
         return result;
@@ -72,9 +84,11 @@ public class ClusterComparator {
         Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> result = HashBasedTable.create();
         for (ClusterWithMoments previousMoments : previousMomentsList) {
             for (ClusterWithMoments actualMoments : actualMomentsList) {
+                double distance = distanceCounter.countDistances(previousMoments, actualMoments);
                 result.put(previousMoments.cluster,
                         actualMoments.cluster,
-                        distanceCounter.countDistances(previousMoments, actualMoments));
+                        distance);
+                //LOGGER.info("Distance for {} {} = {}", new Object[]{previousMoments.momentsVector, actualMoments.momentsVector, distance});
             }
         }
         return result;
@@ -83,9 +97,10 @@ public class ClusterComparator {
     private Map<Picture, List<ClusterWithMoments>> getMomentsForClusters(Map<Picture, List<Cluster<Coordinate>>> clusters) {
         ImmutableMap.Builder<Picture, List<ClusterWithMoments>> resultBuilder = ImmutableMap.builder();
         for (Map.Entry<Picture, List<Cluster<Coordinate>>> pictureListEntry : clusters.entrySet()) {
-            Picture picture = pictureListEntry.getKey();
             ImmutableList.Builder<ClusterWithMoments> momentsBuilder = ImmutableList.builder();
-            for (Cluster<Coordinate> cluster : pictureListEntry.getValue()) {
+            Picture picture = pictureListEntry.getKey();
+            List<Cluster<Coordinate>> filteredClusters = preFilter.filter(pictureListEntry.getValue());
+            for (Cluster<Coordinate> cluster : filteredClusters) {
                 momentsBuilder.add(momentsCounter.countMoments(picture, cluster));
             }
             resultBuilder.put(picture, momentsBuilder.build());
