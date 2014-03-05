@@ -27,7 +27,9 @@ public class PairMatcher {
         ImmutableList.Builder<Pair> builder = ImmutableList.builder();
         for (Cluster<Coordinate> rowKey : data.rowKeySet()) {
             Map<Double, Pair> result = createOrder(data, rowKey);
-            builder.add(Lists.reverse(Lists.newArrayList(result.values())).get(0));
+            if (!result.isEmpty()) {
+                builder.add(Lists.reverse(Lists.newArrayList(result.values())).get(0));
+            }
         }
         return builder.build();
     }
@@ -41,8 +43,6 @@ public class PairMatcher {
             Double similarity = entry.getValue();
             if (similarityDetector.isSimilar(first, second, similarity)) {
                 result.put(similarity, pair(first, second));
-            } else {
-                result.put(0.0, pair(first));
             }
         }
         return result;

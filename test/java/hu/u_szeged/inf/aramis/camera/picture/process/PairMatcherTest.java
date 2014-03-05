@@ -50,10 +50,9 @@ public class PairMatcherTest {
 
         List<Pair> similarPairs = underTest.findSimilarPairs(table);
 
-        assertThat(similarPairs.size(), is(2));
+        assertThat(similarPairs.size(), is(1));
         assertThat(similarPairs, allOf(
-                hasItem(pair(cluster1, cluster2)),
-                hasItem(pair(cluster2))));
+                hasItem(pair(cluster1, cluster2))));
     }
 
     @Test
@@ -76,10 +75,9 @@ public class PairMatcherTest {
 
         List<Pair> similarPairs = underTest.findSimilarPairs(table);
 
-        assertThat(similarPairs.size(), is(2));
+        assertThat(similarPairs.size(), is(1));
         assertThat(similarPairs, allOf(
-                hasItem(pair(cluster1, cluster3)),
-                hasItem(pair(cluster2))));
+                hasItem(pair(cluster1, cluster3))));
     }
 
     @Test

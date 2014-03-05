@@ -50,33 +50,35 @@ public class ClusterComparator {
         Picture previousPicture = null;
         for (Map.Entry<Picture, List<ClusterWithMoments>> entry : sortedMap.entrySet()) {
             List<ClusterWithMoments> actualMomentsList = entry.getValue();
-            if (previousMomentsList.isEmpty()) {
-                if (previousPicture != null) {
-                    result.put(previousPicture, Lists.<Pair>newArrayList());
-                }
-                previousMomentsList = actualMomentsList;
-                previousPicture = entry.getKey();
-                continue;
+            Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> table =
+                    countMomentsDistances(previousMomentsList, actualMomentsList);
+            List<Pair> similarPairs = pairMatcher.findSimilarPairs(table);
+            if (!similarPairs.isEmpty()) {
+                result.put(previousPicture, similarPairs);
+                LOGGER.info("Similar pairs for {} : {}", previousPicture.name, similarPairs);
             } else {
-                Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> table =
-                        countMomentsDistances(previousMomentsList, actualMomentsList);
-                if (!table.isEmpty()) {
-                    List<Pair> similarPairs = pairMatcher.findSimilarPairs(table);
-                    result.put(previousPicture, similarPairs);
-                    LOGGER.info("Similar pairs for {} : {}", previousPicture, similarPairs);
-                } else {
-                    result.put(previousPicture, Lists.transform(actualMomentsList, new Function<ClusterWithMoments, Pair>() {
-                        @Override
-                        public Pair apply(ClusterWithMoments input) {
-                            return Pair.pair(input.cluster);
-                        }
-                    }));
+                LOGGER.info("No similar pairs!");
+                if (previousPicture != null) {
+                    List<Pair> listOfPairs = transformOrphanClusters(previousMomentsList);
+                    LOGGER.info("Adding orphan clusters to {} : {}", previousPicture.name, listOfPairs);
+                    result.put(previousPicture, listOfPairs);
                 }
-                previousMomentsList = actualMomentsList;
-                previousPicture = entry.getKey();
             }
+            previousMomentsList = actualMomentsList;
+            previousPicture = entry.getKey();
         }
+        List<Pair> listOfPairs = transformOrphanClusters(previousMomentsList);
+        result.put(previousPicture, listOfPairs);
         return result;
+    }
+
+    private List<Pair> transformOrphanClusters(List<ClusterWithMoments> previousMomentsList) {
+        return Lists.transform(previousMomentsList, new Function<ClusterWithMoments, Pair>() {
+            @Override
+            public Pair apply(ClusterWithMoments input) {
+                return Pair.pair(input.cluster);
+            }
+        });
     }
 
     private Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> countMomentsDistances(

@@ -33,9 +33,7 @@ public class SimilarityDetector {
     }
 
     private Double countAreaDifference(Rectangle boundingBox1, Rectangle boundingBox2) {
-        double value = abs(boundingBox1.getArea().subtract(boundingBox2.getArea()).doubleValue());
-        LOGGER.info("Area diff {}", value);
-        return value;
+        return abs(boundingBox1.getArea().subtract(boundingBox2.getArea()).doubleValue());
     }
 
     private Double countEuclideanDistance(Rectangle boundingBox1, Rectangle boundingBox2) {

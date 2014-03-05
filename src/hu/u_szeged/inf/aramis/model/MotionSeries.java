@@ -23,14 +23,26 @@ public class MotionSeries {
     }
 
     public boolean putValue(Picture picture, Pair nextItem) {
-        if (lastItem.second.isPresent() && nextItem.first.equals(lastItem.second.get())) {
-            LOGGER.info("Comparing ");
+        LOGGER.info("Comparing {} to {}", lastItem, nextItem);
+        if (compareItems(nextItem)) {
             map.put(picture, nextItem.first);
             lastItem = nextItem;
             return true;
         } else {
             return false;
         }
+    }
+
+    private boolean compareItems(Pair next) {
+        if (lastItem.second.isPresent()) {
+            return compareClusters(next.first, lastItem.second.get());
+        } else {
+            return compareClusters(next.first, lastItem.first);
+        }
+    }
+
+    private boolean compareClusters(Cluster<Coordinate> next, Cluster<Coordinate> previous) {
+        return next.getPoints().equals(previous.getPoints());
     }
 
     public int getColor() {

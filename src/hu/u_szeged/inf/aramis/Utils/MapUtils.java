@@ -56,10 +56,9 @@ public final class MapUtils {
 
     public static <E> Map<Picture, E> transformStringMapToPicture(Map<String, E> resultBitmapPaths) {
         Map<Picture, E> transformed = Maps.newTreeMap();
-        int counter = 0;
         for (Map.Entry<String, E> entry : resultBitmapPaths.entrySet()) {
             LOGGER.info("Get picture from {}", entry.getKey());
-            Picture picture = picture(String.valueOf(counter++), createPicture(entry.getKey()));
+            Picture picture = picture(entry.getKey(), createPicture(entry.getKey()));
             transformed.put(picture, entry.getValue());
         }
         return transformed;

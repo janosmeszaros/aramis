@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.Extra;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.adapter.FullScreenImageAdapter;
@@ -49,7 +52,7 @@ public class DifferencePicturesActivity extends Activity {
     protected void setupResult() {
         Map<Picture, List<Pair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
         List<MotionSeries> motionSerieses = spotChains(transformedMap);
-        List<Bitmap> bitmaps = markChains(motionSerieses);
+        List<Bitmap> bitmaps = markChains(transformedMap.keySet(), motionSerieses);
         for (Bitmap bitmap : bitmaps) {
             PictureSaver.save(Picture.picture("bitmap" + bitmaps.indexOf(bitmap), bitmap));
         }
@@ -57,39 +60,52 @@ public class DifferencePicturesActivity extends Activity {
         pager.setAdapter(imageAdapter);
     }
 
-    private List<Bitmap> markChains(List<MotionSeries> motionSeriesList) {
-        List<Bitmap> bitmaps = Lists.newArrayList();
+    private List<Bitmap> markChains(Set<Picture> pictures, List<MotionSeries> motionSeriesList) {
+        Map<Picture, Bitmap> result = Maps.newHashMap(Maps.asMap(pictures, new Function<Picture, Bitmap>() {
+            @Override
+            public Bitmap apply(Picture input) {
+                return input.bitmap.copy(input.bitmap.getConfig(), true);
+            }
+        }));
         for (MotionSeries motionSeries : motionSeriesList) {
             for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
-                Bitmap originalBitmap = entry.getKey().bitmap;
-                Bitmap copy = originalBitmap.copy(originalBitmap.getConfig(), true);
-                for (Coordinate coordinate : entry.getValue().getPoints()) {
-                    copy.setPixel(coordinate.x, coordinate.y, motionSeries.getColor());
-                }
-                bitmaps.add(copy);
+                Picture key = entry.getKey();
+                LOGGER.info("Coloring coordinates to {} for picture {}", motionSeries.getColor(), key.name);
+                result.put(key, setPixels(motionSeries.getColor(),
+                        result.get(key), entry.getValue().getPoints()));
             }
         }
-        return bitmaps;
+        Map<Picture, Bitmap> sortedResult = sortMapWithPicture(result);
+        return Lists.newArrayList(sortedResult.values());
+    }
+
+    private Bitmap setPixels(int color, Bitmap bitmap, List<Coordinate> coordinates) {
+        Bitmap result = bitmap.copy(bitmap.getConfig(), true);
+        for (Coordinate coordinate : coordinates) {
+            result.setPixel(coordinate.x, coordinate.y, color);
+        }
+        return result;
     }
 
     private List<MotionSeries> spotChains(Map<Picture, List<Pair>> map) {
-        boolean isFirst = true;
         List<MotionSeries> motionSeriesList = Lists.newArrayList();
         for (Map.Entry<Picture, List<Pair>> entry : map.entrySet()) {
+            LOGGER.info("Processing pairs for picture #{}", entry.getKey().name);
+            List<MotionSeries> motionSeriesListForActualPicture = Lists.newArrayList();
             for (Pair pair : entry.getValue()) {
-                if (isFirst) {
-                    motionSeriesList.add(new MotionSeries(randomColor(), pair, entry.getKey()));
-                    isFirst = false;
-                } else {
-                    for (MotionSeries motionSeries : motionSeriesList) {
-                        if (motionSeries.putValue(entry.getKey(), pair)) {
-                            LOGGER.info("Putting to series for picture {}", entry.getKey());
-                            break;
-                        }
+                boolean isPutted = false;
+                for (MotionSeries motionSeries : motionSeriesList) {
+                    if (motionSeries.putValue(entry.getKey(), pair)) {
+                        isPutted = true;
+                        LOGGER.info("Putting to series for picture {} to {}", entry.getKey().name, motionSeries.getColor());
+                        break;
                     }
-                    motionSeriesList.add(new MotionSeries(randomColor(), pair, entry.getKey()));
+                }
+                if (!isPutted) {
+                    motionSeriesListForActualPicture.add(new MotionSeries(randomColor(), pair, entry.getKey()));
                 }
             }
+            motionSeriesList.addAll(motionSeriesListForActualPicture);
         }
         return motionSeriesList;
     }

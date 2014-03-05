@@ -29,8 +29,6 @@ public final class MomentsCounter {
     }
 
     private double[][] createArray(Rectangle rectangle) {
-        LOGGER.info("Create array from {}", rectangle);
-        LOGGER.info("Create array with sizes {} {}", rectangle.maxX - rectangle.minX + 1, rectangle.maxY - rectangle.minY + 1);
         return new double[rectangle.maxX - rectangle.minX + 1][rectangle.maxY - rectangle.minY + 1];
     }
 
