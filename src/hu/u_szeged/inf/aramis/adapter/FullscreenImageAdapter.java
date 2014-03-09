@@ -13,21 +13,34 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 import hu.u_szeged.inf.aramis.R;
-import hu.u_szeged.inf.aramis.model.Pair;
+import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Picture;
 
-public class FullScreenImageAdapter extends PagerAdapter {
-    private List<Bitmap> pictures;
-    private Activity activity;
+import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
-    public FullScreenImageAdapter(List<Bitmap> pictures, Activity activity) {
+public class FullScreenImageAdapter extends PagerAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FullScreenImageAdapter.class);
+
+    private Map<Picture, Bitmap> pictures;
+
+    private final Activity activity;
+    private ImageView imgDisplay;
+
+    private Button btnClose;
+    private Button btnSave;
+
+    public FullScreenImageAdapter(Map<Picture, Bitmap> pictures,
+                                  Activity activity) {
         this.pictures = pictures;
         this.activity = activity;
     }
+
 
     @Override
     public int getCount() {
@@ -41,9 +54,6 @@ public class FullScreenImageAdapter extends PagerAdapter {
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
-        ImageView imgDisplay;
-        Button btnClose;
-
         LayoutInflater inflater = (LayoutInflater) activity
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View viewLayout = inflater.inflate(R.layout.difference_image, container,
@@ -51,12 +61,21 @@ public class FullScreenImageAdapter extends PagerAdapter {
 
         imgDisplay = (ImageView) viewLayout.findViewById(R.id.imgDisplay);
         btnClose = (Button) viewLayout.findViewById(R.id.btnClose);
+        btnSave = (Button) viewLayout.findViewById(R.id.btnSave);
 
-        imgDisplay.setImageBitmap(pictures.get(position));
+        Picture actualPicture = getElementAt(position);
+        imgDisplay.setImageBitmap(pictures.get(actualPicture));
 
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                activity.finish();
+            }
+        });
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                savePictures();
                 activity.finish();
             }
         });
@@ -65,11 +84,18 @@ public class FullScreenImageAdapter extends PagerAdapter {
         return viewLayout;
     }
 
-    private Bitmap getElementAt(Map<Picture, List<Pair>> pictures, int position) {
+    private void savePictures() {
+        int count = 0;
+        for (Bitmap bitmap : pictures.values()) {
+            PictureSaver.save(picture("finalResult" + ++count, bitmap));
+        }
+    }
+
+    private Picture getElementAt(int position) {
         int i = 0;
-        for (Picture picture : pictures.keySet()) {
+        for (Map.Entry<Picture, Bitmap> entry : pictures.entrySet()) {
             if (i == position) {
-                return picture.bitmap;
+                return entry.getKey();
             }
             i++;
         }
@@ -77,8 +103,17 @@ public class FullScreenImageAdapter extends PagerAdapter {
     }
 
     @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
+    }
+
+    @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         ((ViewPager) container).removeView((RelativeLayout) object);
 
+    }
+
+    public void setPictures(Map<Picture, Bitmap> pictures) {
+        this.pictures = pictures;
     }
 }

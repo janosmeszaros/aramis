@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
     @Inject
     protected TakePictureCallback takePictureCallback;
     private Camera camera;
+    private CameraPreview cameraPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +71,7 @@ public class MainActivity extends Activity {
     }
 
     private void setupPreview() {
-        CameraPreview cameraPreview = CameraPreview_.build(getBaseContext());
+        cameraPreview = CameraPreview_.build(getBaseContext());
         cameraPreview.setupCamera(camera);
         preview.addView(cameraPreview);
     }
@@ -116,17 +117,22 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onResume() {
+        LOGGER.info("OnResume");
         super.onResume();
         if (camera == null) {
+            LOGGER.info("Resetup camera");
             setupCamera();
         }
     }
 
     @Override
     protected void onPause() {
+        LOGGER.info("Releasing camera");
         super.onPause();
         if (camera != null) {
             camera.stopPreview();
+            camera.setPreviewCallback(null);
+            cameraPreview.getHolder().removeCallback(cameraPreview);
             camera.release();
             camera = null;
         }

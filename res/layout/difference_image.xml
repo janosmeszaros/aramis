@@ -23,4 +23,17 @@
         android:text="Close"
         android:textColor="#ffffff" />
 
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="60dp"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp"
+        android:text="Save&amp;Close"
+        android:textColor="#ffffff" />
+
 </RelativeLayout>
