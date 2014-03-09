@@ -113,11 +113,13 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             //Map<Picture, List<PictureEdges>> sortedEdgeMap = sortMapWithPicture(edges);
             Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
             //progressBarHandler.stop();
-            startPagerActivity(transformPictureMapToString(pictureListMap));
+            startPagerActivity(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
             LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
+        } catch (IOException e) {
+            LOGGER.error("IOException", ExceptionUtils.getRootCause(e));
         }
     }
 
@@ -221,15 +223,18 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @UiThread
     protected void startResultActivity(Picture picture, List<Cluster<Coordinate>> clusters, Picture clusteredPicture) {
         try {
-            ResultActivity_.intent(context).resultBitmapPath(getFilePathForPicture(picture)).clusterBitmapPath(getFilePathForPicture(clusteredPicture)).clusters(clusters).start();
+            ResultActivity_.intent(context).resultBitmapPath(getFilePathForPicture(picture))
+                    .clusterBitmapPath(getFilePathForPicture(clusteredPicture))
+                    .clusters(clusters).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @UiThread
-    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps) {
-        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).start();
+    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps, String filePathForPicture) {
+        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
+                backgroundPicturePath(filePathForPicture).start();
     }
 
     @Background

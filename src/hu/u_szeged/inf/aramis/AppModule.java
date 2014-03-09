@@ -26,6 +26,7 @@ import hu.u_szeged.inf.aramis.camera.picture.process.MomentsDistanceCounter;
 import hu.u_szeged.inf.aramis.camera.picture.process.PairMatcher;
 import hu.u_szeged.inf.aramis.camera.picture.process.PreFilter;
 import hu.u_szeged.inf.aramis.camera.picture.process.SimilarityDetector;
+import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainDetector;
 
 import static hu.u_szeged.inf.aramis.camera.CounterScheduler.counterScheduler;
 import static hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler.multipleCounterScheduler;
@@ -45,6 +46,7 @@ public class AppModule implements Module {
         binder.bind(ClusterUtils.class).in(Scopes.SINGLETON);
         binder.bind(ProgressBarHandler.class).in(Scopes.SINGLETON);
         binder.bind(CannyEdgeDetector.class).in(Scopes.SINGLETON);
+        binder.bind(ChainDetector.class).in(Scopes.SINGLETON);
     }
 
     @Provides

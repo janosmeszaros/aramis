@@ -2,13 +2,16 @@ package hu.u_szeged.inf.aramis.activities;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.view.MotionEvent;
+import android.view.View;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Table;
+import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.Extra;
@@ -21,12 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 
 import hu.u_szeged.inf.aramis.R;
+import hu.u_szeged.inf.aramis.Utils.ClusterUtils;
 import hu.u_szeged.inf.aramis.adapter.FullScreenImageAdapter;
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.picture.process.post.BitmapRefresher;
+import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainDetector;
+import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainResolver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
 import hu.u_szeged.inf.aramis.model.Pair;
@@ -34,6 +39,7 @@ import hu.u_szeged.inf.aramis.model.Picture;
 
 import static hu.u_szeged.inf.aramis.Utils.MapUtils.sortMapWithPicture;
 import static hu.u_szeged.inf.aramis.Utils.MapUtils.transformStringMapToPicture;
+import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
 @EActivity(R.layout.difference_pictures)
 @RoboGuice
@@ -43,6 +49,13 @@ public class DifferencePicturesActivity extends Activity {
     ViewPager pager;
     @Extra("resultBitmapPaths")
     Map<String, List<Pair>> resultBitmapPaths;
+    @Extra("backgroundPicturePath")
+    String backgroundPicturePath;
+    @Inject
+    PictureEvaluator evaluator;
+    @Inject
+    ChainDetector chainDetector;
+    private FullScreenImageAdapter fullScreenImageAdapter;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,67 +64,104 @@ public class DifferencePicturesActivity extends Activity {
     @AfterViews
     protected void setupResult() {
         Map<Picture, List<Pair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
-        List<MotionSeries> motionSerieses = spotChains(transformedMap);
-        List<Bitmap> bitmaps = markChains(transformedMap.keySet(), motionSerieses);
-        for (Bitmap bitmap : bitmaps) {
-            PictureSaver.save(Picture.picture("bitmap" + bitmaps.indexOf(bitmap), bitmap));
-        }
-        FullScreenImageAdapter imageAdapter = new FullScreenImageAdapter(bitmaps, this);
-        pager.setAdapter(imageAdapter);
+        List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
+        Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
+        Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
+        ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas = createAreas(transformedMap, sortedBitmaps);
+
+
+        BitmapRefresher refresher = new BitmapRefresher(evaluator, picture("result", BitmapFactory.decodeFile(backgroundPicturePath)));
+        ChainResolver chainResolver = new ChainResolver(motionSeriesList);
+        fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
+        TouchListener touchListener = new TouchListener(refresher, chainResolver, sortedBitmaps, areas);
+        pager.setAdapter(fullScreenImageAdapter);
+        pager.setOnTouchListener(touchListener);
     }
 
-    private List<Bitmap> markChains(Set<Picture> pictures, List<MotionSeries> motionSeriesList) {
-        Map<Picture, Bitmap> result = Maps.newHashMap(Maps.asMap(pictures, new Function<Picture, Bitmap>() {
-            @Override
-            public Bitmap apply(Picture input) {
-                return input.bitmap.copy(input.bitmap.getConfig(), true);
+    private ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> createAreas(
+            Map<Picture, List<Pair>> original,
+            Map<Picture, Bitmap> marked) {
+        ImmutableSortedMap.Builder<Picture, Table<Integer, Integer, Cluster<Coordinate>>> builder =
+                ImmutableSortedMap.<Picture, Table<Integer, Integer, Cluster<Coordinate>>>naturalOrder();
+        for (Map.Entry<Picture, Bitmap> entry : marked.entrySet()) {
+            builder.put(entry.getKey(), processListOfPairs(original.get(entry.getKey())));
+        }
+        return builder.build();
+    }
+
+    private Table<Integer, Integer, Cluster<Coordinate>> processListOfPairs(List<Pair> pairs) {
+        Table<Integer, Integer, Cluster<Coordinate>> table = HashBasedTable.create();
+        for (Pair pair : pairs) {
+            for (Coordinate coordinate : pair.first.getPoints()) {
+                table.put(coordinate.x, coordinate.y, pair.first);
             }
-        }));
-        for (MotionSeries motionSeries : motionSeriesList) {
-            for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
-                Picture key = entry.getKey();
-                LOGGER.info("Coloring coordinates to {} for picture {}", motionSeries.getColor(), key.name);
-                result.put(key, setPixels(motionSeries.getColor(),
-                        result.get(key), entry.getValue().getPoints()));
-            }
+            LOGGER.info("table size: {} for cluster {}", table.size(), ClusterUtils.findBoundingBox(pair.first.getPoints()));
         }
-        Map<Picture, Bitmap> sortedResult = sortMapWithPicture(result);
-        return Lists.newArrayList(sortedResult.values());
+        return table;
     }
 
-    private Bitmap setPixels(int color, Bitmap bitmap, List<Coordinate> coordinates) {
-        Bitmap result = bitmap.copy(bitmap.getConfig(), true);
-        for (Coordinate coordinate : coordinates) {
-            result.setPixel(coordinate.x, coordinate.y, color);
-        }
-        return result;
-    }
+    private class TouchListener implements View.OnTouchListener {
+        private final static int TOLERANCE = 50;
 
-    private List<MotionSeries> spotChains(Map<Picture, List<Pair>> map) {
-        List<MotionSeries> motionSeriesList = Lists.newArrayList();
-        for (Map.Entry<Picture, List<Pair>> entry : map.entrySet()) {
-            LOGGER.info("Processing pairs for picture #{}", entry.getKey().name);
-            List<MotionSeries> motionSeriesListForActualPicture = Lists.newArrayList();
-            for (Pair pair : entry.getValue()) {
-                boolean isPutted = false;
-                for (MotionSeries motionSeries : motionSeriesList) {
-                    if (motionSeries.putValue(entry.getKey(), pair)) {
-                        isPutted = true;
-                        LOGGER.info("Putting to series for picture {} to {}", entry.getKey().name, motionSeries.getColor());
-                        break;
+        private final BitmapRefresher refresher;
+        private final ChainResolver chainResolver;
+        private final Map<Picture, Bitmap> pictures;
+        private final ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas;
+
+        private int pointX;
+        private int pointY;
+
+        private TouchListener(BitmapRefresher refresher,
+                              ChainResolver chainResolver,
+                              Map<Picture, Bitmap> pictures,
+                              ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas) {
+            this.refresher = refresher;
+            this.chainResolver = chainResolver;
+            this.pictures = pictures;
+            this.areas = areas;
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent event) {
+            final int action = event.getAction();
+            switch (action) {
+                case MotionEvent.ACTION_MOVE:
+                    return false;
+                case MotionEvent.ACTION_DOWN:
+                    pointX = (int) event.getX();
+                    pointY = (int) event.getY();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    boolean sameX = pointX + TOLERANCE > event.getX() && pointX - TOLERANCE < event.getX();
+                    boolean sameY = pointY + TOLERANCE > event.getY() && pointY - TOLERANCE < event.getY();
+                    if (sameX && sameY) {
+                        LOGGER.info("Touch happened on x:{} y:{}", pointX, pointY);
+                        Picture actualPicture = getElementAt(pager.getCurrentItem());
+                        Table<Integer, Integer, Cluster<Coordinate>> table = areas.get(actualPicture);
+                        LOGGER.info("Got Table size for {} : {}", actualPicture.name, table.size());
+                        if (table.contains(pointX, pointY)) {
+                            Cluster<Coordinate> cluster = table.get(pointX, pointY);
+                            Map<Picture, Cluster<Coordinate>> map = chainResolver.findChainFor(actualPicture, cluster);
+                            pictures.putAll(refresher.refreshBitmaps(map));
+                            fullScreenImageAdapter.setPictures(pictures);
+                            fullScreenImageAdapter.notifyDataSetChanged();
+                        }
                     }
-                }
-                if (!isPutted) {
-                    motionSeriesListForActualPicture.add(new MotionSeries(randomColor(), pair, entry.getKey()));
-                }
             }
-            motionSeriesList.addAll(motionSeriesListForActualPicture);
+            return false;
         }
-        return motionSeriesList;
+
+        private Picture getElementAt(int position) {
+            int i = 0;
+            for (Map.Entry<Picture, Bitmap> entry : pictures.entrySet()) {
+                if (i == position) {
+                    return entry.getKey();
+                }
+                i++;
+            }
+            throw new IllegalArgumentException(String.format("Cant find %d th element in the map", position));
+        }
+
     }
 
-    private int randomColor() {
-        Random rnd = new Random();
-        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-    }
 }

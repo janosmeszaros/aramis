@@ -85,7 +85,7 @@ public class ResultActivity extends Activity {
                 LOGGER.info("Touch happened on x:{} y:{}", evX, evY);
                 Cluster<Coordinate> cluster = clusterTable.get(evX, evY);
                 if (cluster != null) {
-                    Bitmap evaluated = evaluator.switchColors(clusterPicture, resultPicture, cluster.getPoints());
+                    Bitmap evaluated = evaluator.switchColors(clusterPicture.bitmap, resultPicture.bitmap, cluster.getPoints());
                     clusterPicture = Picture.picture("cluster", evaluated);
                     result.setImageBitmap(evaluated);
                 }

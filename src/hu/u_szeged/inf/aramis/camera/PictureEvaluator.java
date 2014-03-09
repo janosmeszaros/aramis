@@ -43,7 +43,7 @@ public class PictureEvaluator {
     public Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
         Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
-        LOGGER.info("Starting evaluate pictures!" + Thread.currentThread().getName());
+        LOGGER.info("Starting evaluate pictures!");
         LOGGER.debug("Coordinates number: {}", coordinates.size());
         for (Coordinate coordinate : coordinates) {
             Integer color = evaluatePixel(pictures, coordinate.x, coordinate.y);
@@ -52,11 +52,11 @@ public class PictureEvaluator {
         return output;
     }
 
-    public Bitmap switchColors(Picture cluster, Picture result, List<Coordinate> coordinates) {
-        Bitmap output = cluster.bitmap.copy(cluster.bitmap.getConfig(), true);
+    public Bitmap switchColors(Bitmap original, Bitmap background, List<Coordinate> coordinates) {
+        Bitmap output = original.copy(original.getConfig(), true);
         LOGGER.debug("Coordinates number: {}", coordinates.size());
         for (Coordinate coordinate : coordinates) {
-            output.setPixel(coordinate.x, coordinate.y, result.bitmap.getPixel(coordinate.x, coordinate.y));
+            output.setPixel(coordinate.x, coordinate.y, background.getPixel(coordinate.x, coordinate.y));
         }
         return output;
     }
