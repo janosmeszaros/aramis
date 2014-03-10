@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import com.google.common.collect.ImmutableList;
 
@@ -10,7 +10,7 @@ import java.util.List;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Rectangle;
 
-import static hu.u_szeged.inf.aramis.Utils.ClusterUtils.findBoundingBox;
+import static hu.u_szeged.inf.aramis.utils.ClusterUtils.findBoundingBox;
 import static java.math.RoundingMode.HALF_UP;
 
 public class PreFilter {

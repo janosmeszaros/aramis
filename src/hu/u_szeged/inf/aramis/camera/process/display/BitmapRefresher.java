@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process.post;
+package hu.u_szeged.inf.aramis.camera.process.display;
 
 import android.graphics.Bitmap;
 
@@ -8,7 +8,7 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 
 import java.util.Map;
 
-import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 

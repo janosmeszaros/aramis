@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture;
+package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 

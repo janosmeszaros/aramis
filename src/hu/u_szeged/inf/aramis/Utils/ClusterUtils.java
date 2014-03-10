@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.Utils;
+package hu.u_szeged.inf.aramis.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -7,7 +7,7 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 
 import java.util.List;
 
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.Rectangle;

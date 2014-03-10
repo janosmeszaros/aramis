@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import hu.u_szeged.inf.aramis.R;
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.PictureRow;
 
 @EViewGroup(R.layout.picture_list_row)

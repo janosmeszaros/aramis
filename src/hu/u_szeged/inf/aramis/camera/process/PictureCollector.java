@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera;
+package hu.u_szeged.inf.aramis.camera.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 

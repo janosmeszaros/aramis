@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -12,6 +12,8 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.List;
 
+import hu.u_szeged.inf.aramis.camera.process.motion.PairMatcher;
+import hu.u_szeged.inf.aramis.camera.process.motion.SimilarityDetector;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 

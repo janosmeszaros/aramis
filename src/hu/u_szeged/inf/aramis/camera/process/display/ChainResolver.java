@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process.post;
+package hu.u_szeged.inf.aramis.camera.process.display;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 

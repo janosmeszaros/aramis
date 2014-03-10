@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
@@ -10,8 +10,8 @@ import hu.u_szeged.inf.aramis.model.MomentsVector;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.Rectangle;
 
-import static hu.u_szeged.inf.aramis.Utils.ClusterUtils.findBoundingBox;
 import static hu.u_szeged.inf.aramis.model.ClusterWithMoments.pictureWithMoments;
+import static hu.u_szeged.inf.aramis.utils.ClusterUtils.findBoundingBox;
 
 public final class MomentsCounter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MomentsCounter.class);

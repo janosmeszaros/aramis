@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.junit.Before;
@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import hu.u_szeged.inf.aramis.camera.process.motion.SimilarityDetector;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;

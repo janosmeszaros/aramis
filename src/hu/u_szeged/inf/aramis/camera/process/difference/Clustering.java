@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture;
+package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.PointStatus;
 
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 

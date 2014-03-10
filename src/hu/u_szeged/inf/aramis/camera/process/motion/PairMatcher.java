@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

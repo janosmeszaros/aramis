@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
@@ -20,7 +20,7 @@ import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
-import static hu.u_szeged.inf.aramis.Utils.MapUtils.sortMapWithPicture;
+import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
 
 public class ClusterComparator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterComparator.class);

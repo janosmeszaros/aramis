@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Rectangle;
 
-import static hu.u_szeged.inf.aramis.Utils.ClusterUtils.findBoundingBox;
+import static hu.u_szeged.inf.aramis.utils.ClusterUtils.findBoundingBox;
 import static java.lang.Math.abs;
 
 public class SimilarityDetector {

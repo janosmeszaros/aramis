@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera;
+package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import com.google.common.collect.Maps;
 

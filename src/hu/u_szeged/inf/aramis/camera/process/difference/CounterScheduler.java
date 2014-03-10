@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera;
+package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
-import hu.u_szeged.inf.aramis.camera.picture.DiffCounter;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 

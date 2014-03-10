@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 import hu.u_szeged.inf.aramis.R;
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static hu.u_szeged.inf.aramis.model.Picture.picture;

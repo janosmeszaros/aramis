@@ -26,20 +26,20 @@ import java.util.List;
 import java.util.Map;
 
 import hu.u_szeged.inf.aramis.R;
-import hu.u_szeged.inf.aramis.Utils.ClusterUtils;
 import hu.u_szeged.inf.aramis.adapter.FullScreenImageAdapter;
-import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
-import hu.u_szeged.inf.aramis.camera.picture.process.post.BitmapRefresher;
-import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainDetector;
-import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainResolver;
+import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.process.display.BitmapRefresher;
+import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
+import hu.u_szeged.inf.aramis.camera.process.display.ChainResolver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.utils.ClusterUtils;
 
-import static hu.u_szeged.inf.aramis.Utils.MapUtils.sortMapWithPicture;
-import static hu.u_szeged.inf.aramis.Utils.MapUtils.transformStringMapToPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
+import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
+import static hu.u_szeged.inf.aramis.utils.MapUtils.transformStringMapToPicture;
 
 @EActivity(R.layout.difference_pictures)
 @RoboGuice

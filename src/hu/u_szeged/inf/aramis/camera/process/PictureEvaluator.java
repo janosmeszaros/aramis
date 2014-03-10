@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera;
+package hu.u_szeged.inf.aramis.camera.process;
 
 import android.graphics.Bitmap;
 

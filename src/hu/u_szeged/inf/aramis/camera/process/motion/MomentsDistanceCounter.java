@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.picture.process;
+package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import hu.u_szeged.inf.aramis.model.ClusterWithMoments;
 import hu.u_szeged.inf.aramis.model.MomentsVector;

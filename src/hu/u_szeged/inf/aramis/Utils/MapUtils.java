@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.Utils;
+package hu.u_szeged.inf.aramis.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 import hu.u_szeged.inf.aramis.model.Picture;
 
-import static hu.u_szeged.inf.aramis.camera.picture.PictureSaver.getFilePathForPicture;
+import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 
 public final class MapUtils {

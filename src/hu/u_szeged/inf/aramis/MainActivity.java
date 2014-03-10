@@ -23,9 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
-import hu.u_szeged.inf.aramis.camera.DirectoryHelper;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
-import hu.u_szeged.inf.aramis.camera.picture.PictureSaver;
+import hu.u_szeged.inf.aramis.camera.utils.DirectoryHelper;
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 
 import static android.hardware.Camera.open;
 
@@ -53,7 +53,6 @@ public class MainActivity extends Activity {
 
     @AfterViews
     protected void setupCamera() {
-        //setupImagePreview();
         try {
             camera = getCameraInstance();
             brightness.setMax(camera.getParameters().getMaxExposureCompensation() - camera.getParameters().getMinExposureCompensation());
@@ -117,17 +116,14 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onResume() {
-        LOGGER.info("OnResume");
         super.onResume();
         if (camera == null) {
-            LOGGER.info("Resetup camera");
             setupCamera();
         }
     }
 
     @Override
     protected void onPause() {
-        LOGGER.info("Releasing camera");
         super.onPause();
         if (camera != null) {
             camera.stopPreview();

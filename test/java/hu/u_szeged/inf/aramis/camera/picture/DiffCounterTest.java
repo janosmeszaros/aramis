@@ -14,6 +14,7 @@ import org.robolectric.annotation.Config;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import hu.u_szeged.inf.aramis.camera.process.difference.DiffCounter;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.testutils.CustomShadowBitmap;
