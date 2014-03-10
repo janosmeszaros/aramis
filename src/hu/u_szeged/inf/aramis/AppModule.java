@@ -3,7 +3,6 @@ package hu.u_szeged.inf.aramis;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 
 import java.math.BigDecimal;
@@ -11,27 +10,26 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import hu.u_szeged.inf.aramis.Utils.ClusterUtils;
-import hu.u_szeged.inf.aramis.activities.listpictures.ProgressBarHandler;
-import hu.u_szeged.inf.aramis.camera.CounterScheduler;
-import hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler;
-import hu.u_szeged.inf.aramis.camera.PictureCollector;
-import hu.u_szeged.inf.aramis.camera.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
-import hu.u_szeged.inf.aramis.camera.picture.CannyEdgeDetector;
-import hu.u_szeged.inf.aramis.camera.picture.Clustering;
-import hu.u_szeged.inf.aramis.camera.picture.process.ClusterComparator;
-import hu.u_szeged.inf.aramis.camera.picture.process.MomentsCounter;
-import hu.u_szeged.inf.aramis.camera.picture.process.MomentsDistanceCounter;
-import hu.u_szeged.inf.aramis.camera.picture.process.PairMatcher;
-import hu.u_szeged.inf.aramis.camera.picture.process.PreFilter;
-import hu.u_szeged.inf.aramis.camera.picture.process.SimilarityDetector;
-import hu.u_szeged.inf.aramis.camera.picture.process.post.ChainDetector;
+import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
+import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
+import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
+import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
+import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
+import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
+import hu.u_szeged.inf.aramis.camera.process.motion.MomentsCounter;
+import hu.u_szeged.inf.aramis.camera.process.motion.MomentsDistanceCounter;
+import hu.u_szeged.inf.aramis.camera.process.motion.PairMatcher;
+import hu.u_szeged.inf.aramis.camera.process.motion.PreFilter;
+import hu.u_szeged.inf.aramis.camera.process.motion.SimilarityDetector;
+import hu.u_szeged.inf.aramis.utils.ClusterUtils;
 
-import static hu.u_szeged.inf.aramis.camera.CounterScheduler.counterScheduler;
-import static hu.u_szeged.inf.aramis.camera.MultipleCounterScheduler.multipleCounterScheduler;
-import static hu.u_szeged.inf.aramis.camera.PictureCollector.pictureCollector;
-import static hu.u_szeged.inf.aramis.camera.picture.Clustering.clustering;
+import static com.google.inject.Scopes.SINGLETON;
+import static hu.u_szeged.inf.aramis.camera.process.PictureCollector.pictureCollector;
+import static hu.u_szeged.inf.aramis.camera.process.difference.Clustering.clustering;
+import static hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler.counterScheduler;
+import static hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler.multipleCounterScheduler;
 
 public class AppModule implements Module {
     public static final double MOMENT_BORDER = 4.0;
@@ -42,11 +40,9 @@ public class AppModule implements Module {
 
     @Override
     public void configure(Binder binder) {
-        binder.bind(PictureEvaluator.class).in(Scopes.SINGLETON);
-        binder.bind(ClusterUtils.class).in(Scopes.SINGLETON);
-        binder.bind(ProgressBarHandler.class).in(Scopes.SINGLETON);
-        binder.bind(CannyEdgeDetector.class).in(Scopes.SINGLETON);
-        binder.bind(ChainDetector.class).in(Scopes.SINGLETON);
+        binder.bind(PictureEvaluator.class).in(SINGLETON);
+        binder.bind(ClusterUtils.class).in(SINGLETON);
+        binder.bind(ChainDetector.class).in(SINGLETON);
     }
 
     @Provides
