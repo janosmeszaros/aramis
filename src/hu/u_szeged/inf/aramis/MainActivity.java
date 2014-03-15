@@ -1,7 +1,6 @@
 package hu.u_szeged.inf.aramis;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
-import hu.u_szeged.inf.aramis.camera.utils.DirectoryHelper;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 
 import static android.hardware.Camera.open;
@@ -62,11 +60,6 @@ public class MainActivity extends Activity {
             Toast error = Toast.makeText(getBaseContext(), "Error getting camera instance!", Toast.LENGTH_LONG);
             error.show();
         }
-    }
-
-    private void setupImagePreview() {
-        Bitmap bitmap = DirectoryHelper.getLastPictureFromAlbum(PictureSaver.ALBUM_NAME);
-        imagePreview.setImageBitmap(bitmap);
     }
 
     private void setupPreview() {

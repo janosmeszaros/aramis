@@ -3,7 +3,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingBottom="@dimen/activity_vertical_margin"
-                tools:context=".MainActivity">
+    android:background="@android:color/holo_blue_light"
+    tools:context=".MainActivity">
 
     <FrameLayout
             android:id="@+id/camera_preview"
@@ -20,19 +21,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:layout_alignParentBottom="true"
+        style="@style/btnStyleBreakerBay"
+        android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"/>
 
     <ImageView
             android:id="@+id/image_preview"
             android:gravity="right"
-            android:layout_width="35dp"
-            android:layout_height="48px"
-            android:layout_gravity="right|bottom"
-            android:layout_below="@+id/camera_preview"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:layout_gravity="right|bottom"
             android:layout_alignRight="@+id/camera_preview"
             android:layout_marginRight="14dp"
-            android:layout_alignBottom="@+id/button_capture"/>
+        android:background="@drawable/list_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_capture" />
 
     <SeekBar
             android:layout_width="fill_parent"

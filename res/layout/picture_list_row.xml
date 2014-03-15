@@ -2,6 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
+    android:background="@drawable/list_selector"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:padding="6dip">
 
@@ -33,5 +34,14 @@
         android:textSize="16sp"
         android:layout_alignTop="@+id/icon"
         android:layout_toRightOf="@+id/icon" />
+
+
+    <!-- Rightend Arrow -->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/right_arrow"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true" />
 
 </RelativeLayout>

@@ -1,8 +1,6 @@
 package hu.u_szeged.inf.aramis.activities.listpictures;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.Bean;
@@ -27,8 +25,6 @@ public class PictureListActivity extends Activity {
 
     @ItemClick
     void pictureListItemClicked(PictureRow row) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(row.file), "image/*");
-        startActivity(intent);
+        FinalResultActivity_.intent(this).files(row.files).start();
     }
 }

@@ -41,7 +41,7 @@ import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.transformStringMapToPicture;
 
-@EActivity(R.layout.difference_pictures)
+@EActivity(R.layout.picture_swiper)
 @RoboGuice
 public class DifferencePicturesActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(DifferencePicturesActivity.class);

@@ -32,7 +32,7 @@ public class PictureListRow extends RelativeLayout {
     public void bind(PictureRow picture) {
         LOGGER.info("Write out picture: {}", picture);
         icon.setImageBitmap(picture.bitmap);
-        firstLine.setText(picture.file.getName());
+        //firstLine.setText(picture.file.getName());
         secondLine.setText(picture.lastModified.toString(PictureSaver.DATE_TIME_FORMATTER));
     }
 }
