@@ -15,6 +15,7 @@ import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
 import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
+import hu.u_szeged.inf.aramis.camera.process.difference.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
@@ -43,6 +44,7 @@ public class AppModule implements Module {
         binder.bind(PictureEvaluator.class).in(SINGLETON);
         binder.bind(ClusterUtils.class).in(SINGLETON);
         binder.bind(ChainDetector.class).in(SINGLETON);
+        binder.bind(ImageProcessor.class).in(SINGLETON);
     }
 
     @Provides

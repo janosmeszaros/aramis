@@ -45,6 +45,10 @@ public class PictureSaver {
         return StringUtils.join(DirectoryHelper.getAlbumStorageDir(Joiner.on("/").join(ALBUM_NAME, ACTUAL_ALBUM)), File.separator, picture.name, ".jpeg");
     }
 
+    public static String getFilePathForRootDir() throws IOException {
+        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(ALBUM_NAME));
+    }
+
     public static void newAlbum() {
         ACTUAL_ALBUM = DATE_TIME_FORMATTER.print(new DateTime());
     }

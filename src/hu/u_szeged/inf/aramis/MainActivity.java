@@ -1,6 +1,7 @@
 package hu.u_szeged.inf.aramis;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -21,6 +22,7 @@ import com.googlecode.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import hu.u_szeged.inf.aramis.activities.fileselector.FileChooser;
 import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
@@ -79,6 +81,12 @@ public class MainActivity extends Activity {
     @Click(R.id.image_preview)
     public void showPictureList() {
         PictureListActivity_.intent(this).start();
+    }
+
+    @Click(R.id.button_select)
+    public void startSelector() {
+        Intent intent1 = new Intent(this, FileChooser.class);
+        startActivity(intent1);
     }
 
     private Camera getCameraInstance() {
