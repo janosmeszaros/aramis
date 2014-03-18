@@ -1,12 +1,8 @@
 package hu.u_szeged.inf.aramis.camera;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.hardware.Camera;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterInject;
 import com.googlecode.androidannotations.annotations.App;
@@ -15,35 +11,25 @@ import com.googlecode.androidannotations.annotations.EBean;
 import com.googlecode.androidannotations.annotations.UiThread;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.math3.ml.clustering.Cluster;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
-import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
 import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
-import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
-import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
-import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
-import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
+import hu.u_szeged.inf.aramis.camera.process.difference.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.createBitmap;
-import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
-import static hu.u_szeged.inf.aramis.utils.MapUtils.transformPictureMapToString;
 
 @EBean
 public class TakePictureCallback implements Camera.PreviewCallback {
@@ -57,13 +43,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Inject
     protected PictureCollector collector;
     @Inject
-    protected PictureEvaluator evaluator;
-    @Inject
-    protected ClusterComparator clusterComparator;
-    @Inject
-    protected Clustering clustering;
-    @Inject
-    protected MultipleCounterScheduler multipleCounterScheduler;
+    protected ImageProcessor imageProcessor;
     private int[] pixels;
     private Camera.Size size;
 
@@ -87,19 +67,9 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Background
     protected void evaluate() {
         try {
-            //startProgress();
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
             List<Picture> pictures = collector.getPictures();
-            Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
-            Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
-            savePicture(backgroundPicture);
-            collector.clear();
-            multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
-            Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
-            Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
-            Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
-            //stopProgress();
-            startPagerActivity(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
+            imageProcessor.processImages(diffCoordinates, pictures);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -120,29 +90,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         progressBarHandler.start();
     }
 
-    private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Set<Coordinate>> resultBitmaps) {
-        Map<Picture, List<Cluster<Coordinate>>> clusterisedPictures = Maps.newLinkedHashMap();
-        for (Map.Entry<Picture, Set<Coordinate>> entry : resultBitmaps.entrySet()) {
-            List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(entry.getValue()));
-            clusterisedPictures.put(entry.getKey(), clusterList);
-        }
-        return clusterisedPictures;
-    }
-
-    private Table<Integer, Integer, Boolean> transformSet(Set<Coordinate> diffCoordinates) {
-        Table<Integer, Integer, Boolean> table = HashBasedTable.create(diffCoordinates.size(), diffCoordinates.size());
-        for (Coordinate coordinate : diffCoordinates) {
-            table.put(coordinate.x, coordinate.y, false);
-        }
-        return table;
-    }
-
-    @UiThread
-    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps, String filePathForPicture) {
-        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
-                backgroundPicturePath(filePathForPicture).start();
-    }
-
     @Background
     protected void decodePicture(byte[] bytes, String name) {
         LOGGER.info("Start decoding picture");
@@ -150,11 +97,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         LOGGER.info("Picture decoded");
         Picture picture = picture(name, createBitmap(pixels, size.width, size.height, ARGB_8888));
         collector.addPicture(picture);
-        savePicture(picture);
-    }
-
-    @Background
-    protected void savePicture(Picture picture) {
         PictureSaver.save(picture);
     }
 
