@@ -11,11 +11,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
+import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
 import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
-import hu.u_szeged.inf.aramis.camera.process.difference.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
@@ -36,8 +36,8 @@ public class AppModule implements Module {
     public static final double MOMENT_BORDER = 4.0;
     public static final double DISTANCE_BORDER = 250.0;
     public static final double AREA_DIFFERENCE_BORDER = 2000.0;
-    public static final BigDecimal PRE_FILTER_SIMILARITY_BORDER = new BigDecimal(0.85);
-    public static final BigDecimal PRE_FILTER_AREA_BORDER = new BigDecimal(100);
+    public static final BigDecimal PRE_FILTER_SIMILARITY_BORDER = new BigDecimal(0.90);
+    public static final BigDecimal PRE_FILTER_AREA_BORDER = new BigDecimal(500);
 
     @Override
     public void configure(Binder binder) {

@@ -1,4 +1,4 @@
-package hu.u_szeged.inf.aramis.camera.process.difference;
+package hu.u_szeged.inf.aramis.camera.process;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,7 +10,6 @@ import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterInject;
 import com.googlecode.androidannotations.annotations.App;
 import com.googlecode.androidannotations.annotations.EBean;
-import com.googlecode.androidannotations.annotations.UiThread;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.joda.time.DateTime;
@@ -22,16 +21,18 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
-import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
-import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
+import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
+import static hu.u_szeged.inf.aramis.model.ProcessResult.processResult;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.transformPictureMapToString;
 
 @EBean
@@ -54,7 +55,7 @@ public class ImageProcessor {
         application.getInjector().injectMembers(this);
     }
 
-    public void processImages(Set<Coordinate> diffCoordinates, List<Picture> pictures) throws InterruptedException, ExecutionException, IOException {
+    public ProcessResult processImages(Set<Coordinate> diffCoordinates, List<Picture> pictures) throws InterruptedException, ExecutionException, IOException {
         Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
         Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
         PictureSaver.save(backgroundPicture);
@@ -62,7 +63,7 @@ public class ImageProcessor {
         Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
-        startPagerActivity(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
+        return processResult(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
     }
 
     private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Set<Coordinate>> resultBitmaps) {
@@ -81,11 +82,4 @@ public class ImageProcessor {
         }
         return table;
     }
-
-    @UiThread
-    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps, String filePathForPicture) {
-        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
-                backgroundPicturePath(filePathForPicture).start();
-    }
-
 }

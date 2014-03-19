@@ -16,16 +16,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
+import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
 import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
+import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
-import hu.u_szeged.inf.aramis.camera.process.difference.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.createBitmap;
@@ -69,7 +73,8 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         try {
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
             List<Picture> pictures = collector.getPictures();
-            imageProcessor.processImages(diffCoordinates, pictures);
+            ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures);
+            startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
@@ -77,6 +82,12 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         } catch (IOException e) {
             LOGGER.error("IOException", ExceptionUtils.getRootCause(e));
         }
+    }
+
+    @UiThread
+    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps, String filePathForPicture) {
+        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
+                backgroundPicturePath(filePathForPicture).start();
     }
 
     @UiThread

@@ -96,4 +96,7 @@ public class FileArrayAdapter extends ArrayAdapter<Item> {
         return c.getResources().getDrawable(imageResource);
     }
 
+    public List<Item> getItems() {
+        return items;
+    }
 }

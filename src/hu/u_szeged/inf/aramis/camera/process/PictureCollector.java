@@ -31,6 +31,12 @@ public class PictureCollector {
         pictures.add(picture);
     }
 
+    public void addPictures(List<Picture> pictures) {
+        for (Picture picture : pictures) {
+            addPicture(picture);
+        }
+    }
+
     public void addPicture(Picture picture) {
         pictures.add(picture);
         int actualSize = pictures.size();
