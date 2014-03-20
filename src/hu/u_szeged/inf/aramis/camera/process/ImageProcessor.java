@@ -25,12 +25,14 @@ import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
 import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
+import static hu.u_szeged.inf.aramis.model.BlurredPicture.blurredPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static hu.u_szeged.inf.aramis.model.ProcessResult.processResult;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.transformPictureMapToString;
@@ -55,11 +57,12 @@ public class ImageProcessor {
         application.getInjector().injectMembers(this);
     }
 
-    public ProcessResult processImages(Set<Coordinate> diffCoordinates, List<Picture> pictures) throws InterruptedException, ExecutionException, IOException {
+    public ProcessResult processImages(Set<Coordinate> diffCoordinates, List<BlurredPicture> pictures) throws InterruptedException, ExecutionException, IOException {
         Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
         Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
         PictureSaver.save(backgroundPicture);
-        multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
+        multipleCounterScheduler.schedule(blurredPicture(backgroundPicture.bitmap, backgroundPicture.name), pictures, diffCoordinates);
+        backgroundPicture.bitmap.recycle();
         Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);

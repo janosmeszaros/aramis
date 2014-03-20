@@ -23,7 +23,6 @@ public class MotionSeries {
     }
 
     public boolean putValue(Picture picture, Pair nextItem) {
-        LOGGER.info("Comparing {} to {}", lastItem, nextItem);
         if (compareItems(nextItem)) {
             map.put(picture, nextItem.first);
             lastItem = nextItem;

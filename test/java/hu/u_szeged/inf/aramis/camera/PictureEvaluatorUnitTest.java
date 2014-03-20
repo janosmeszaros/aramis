@@ -3,6 +3,7 @@ package hu.u_szeged.inf.aramis.camera;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import org.junit.Before;
@@ -11,29 +12,28 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.testutils.CustomShadowBitmap;
 
+import static hu.u_szeged.inf.aramis.model.BlurredPicture.blurredPicture;
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
-import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 public class PictureEvaluatorUnitTest {
-    private List<Picture> pictures;
+    private List<BlurredPicture> pictures;
     private Set<Coordinate> diffCoordinates;
 
     @Before
     @Config(shadows = {CustomShadowBitmap.class})
     public void setup() {
-        pictures = new ArrayList<Picture>();
+        pictures = Lists.newArrayList();
         diffCoordinates = Sets.newHashSet();
 
         createSamplePicture(Color.BLUE);
@@ -44,7 +44,7 @@ public class PictureEvaluatorUnitTest {
     private void createSamplePicture(int color) {
         Bitmap bitmap1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
         fillBitmap(bitmap1, color);
-        pictures.add(picture("name", bitmap1));
+        pictures.add(blurredPicture(bitmap1, "name"));
     }
 
     private void fillBitmap(Bitmap bitmap1, int color) {
@@ -71,7 +71,7 @@ public class PictureEvaluatorUnitTest {
     public void testEvaluateWhenNoneOfThePixelsAreDifferent() {
         Bitmap bitmap = new PictureEvaluator().evaluate(pictures, diffCoordinates);
 
-        assertThat(bitmap, equalTo(pictures.get(pictures.size() - 1).bitmap));
+        assertThat(bitmap, equalTo(pictures.get(pictures.size() - 1).picture.bitmap));
     }
 
     @Test

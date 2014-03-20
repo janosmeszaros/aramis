@@ -35,7 +35,6 @@ import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
-import hu.u_szeged.inf.aramis.utils.ClusterUtils;
 
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
@@ -45,7 +44,7 @@ import static hu.u_szeged.inf.aramis.utils.MapUtils.transformStringMapToPicture;
 @RoboGuice
 public class DifferencePicturesActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(DifferencePicturesActivity.class);
-    @ViewById
+    @ViewById(R.id.pager)
     ViewPager pager;
     @Extra("resultBitmapPaths")
     Map<String, List<Pair>> resultBitmapPaths;
@@ -95,7 +94,6 @@ public class DifferencePicturesActivity extends Activity {
             for (Coordinate coordinate : pair.first.getPoints()) {
                 table.put(coordinate.x, coordinate.y, pair.first);
             }
-            LOGGER.info("table size: {} for cluster {}", table.size(), ClusterUtils.findBoundingBox(pair.first.getPoints()));
         }
         return table;
     }

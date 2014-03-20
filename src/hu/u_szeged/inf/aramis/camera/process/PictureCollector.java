@@ -11,13 +11,14 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureCollector.class);
-    private List<Picture> pictures = Lists.newArrayList();
     private final CounterScheduler counterScheduler;
+    private List<BlurredPicture> pictures = Lists.newArrayList();
 
     private PictureCollector(CounterScheduler counterScheduler) {
         this.counterScheduler = counterScheduler;
@@ -27,10 +28,6 @@ public class PictureCollector {
         return new PictureCollector(counterScheduler);
     }
 
-    public void addPictureWithoutSchedule(Picture picture) {
-        pictures.add(picture);
-    }
-
     public void addPictures(List<Picture> pictures) {
         for (Picture picture : pictures) {
             addPicture(picture);
@@ -38,7 +35,8 @@ public class PictureCollector {
     }
 
     public void addPicture(Picture picture) {
-        pictures.add(picture);
+        pictures.add(BlurredPicture.blurredPicture(picture.bitmap, picture.name));
+        picture.bitmap.recycle();
         int actualSize = pictures.size();
         if (actualSize > 1) {
             counterScheduler.schedule(pictures.get(actualSize - 2), pictures.get(actualSize - 1));
@@ -58,7 +56,7 @@ public class PictureCollector {
         return pictures.size();
     }
 
-    public List<Picture> getPictures() {
+    public List<BlurredPicture> getPictures() {
         return ImmutableList.copyOf(pictures);
     }
 }

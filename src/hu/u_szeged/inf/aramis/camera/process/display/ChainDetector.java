@@ -34,9 +34,9 @@ public class ChainDetector {
         for (MotionSeries motionSeries : motionSeriesList) {
             for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
                 Picture key = entry.getKey();
-                LOGGER.info("Coloring coordinates to {} for picture {}", motionSeries.getColor(), key.name);
                 result.put(key, setPixels(motionSeries.getColor(),
                         result.get(key), entry.getValue().getPoints()));
+                LOGGER.info("Coloring pixels in {} to {}", entry.getKey().name, motionSeries.getColor());
             }
         }
         return result;

@@ -11,6 +11,7 @@ public class Picture implements Comparable {
     public final Bitmap bitmap;
     public final String name;
 
+
     private Picture(Bitmap bitmap, String name) {
         this.bitmap = bitmap;
         this.name = name;

@@ -15,12 +15,11 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import hu.u_szeged.inf.aramis.camera.process.difference.DiffCounter;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.testutils.CustomShadowBitmap;
 
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
-import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,9 +41,9 @@ public class DiffCounterTest {
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenOneDiffIsPresent() {
-        Picture picture1 = createSamplePicture(20, 30, 40);
-        picture1.bitmap.setPixel(1, 1, Color.rgb(20 + DiffCounter.BORDER + 1, 30, 40));
-        Picture picture2 = createSamplePicture(20, 30, 40);
+        BlurredPicture picture1 = createSamplePicture(20, 30, 40);
+        picture1.picture.bitmap.setPixel(1, 1, Color.rgb(20 + DiffCounter.BORDER + 1, 30, 40));
+        BlurredPicture picture2 = createSamplePicture(20, 30, 40);
         underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
@@ -56,8 +55,8 @@ public class DiffCounterTest {
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenNoDiffIsPresent() {
-        Picture picture1 = createSamplePicture(20, 30, 40);
-        Picture picture2 = createSamplePicture(20, 30, 40);
+        BlurredPicture picture1 = createSamplePicture(20, 30, 40);
+        BlurredPicture picture2 = createSamplePicture(20, 30, 40);
         underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
@@ -68,10 +67,10 @@ public class DiffCounterTest {
     @Test
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenTwoDiffsArePresent() {
-        Picture picture1 = createSamplePicture(20, 30, 40);
-        picture1.bitmap.setPixel(1, 1, Color.rgb(20, 30, 40 + DiffCounter.BORDER + 1));
-        Picture picture2 = createSamplePicture(20, 30, 40);
-        picture2.bitmap.setPixel(0, 1, Color.rgb(20, 30 + DiffCounter.BORDER + 1, 40));
+        BlurredPicture picture1 = createSamplePicture(20, 30, 40);
+        picture1.picture.bitmap.setPixel(1, 1, Color.rgb(20, 30, 40 + DiffCounter.BORDER + 1));
+        BlurredPicture picture2 = createSamplePicture(20, 30, 40);
+        picture2.picture.bitmap.setPixel(0, 1, Color.rgb(20, 30 + DiffCounter.BORDER + 1, 40));
         underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         Set<Coordinate> diffs = underTest.call();
@@ -84,8 +83,8 @@ public class DiffCounterTest {
     @Test(expected = IllegalArgumentException.class)
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenThereIsDifferenceInPictureWeight() {
-        Picture picture1 = createSamplePicture(20, 30, 40);
-        Picture picture2 = picture("name", Bitmap.createBitmap(2, 3, Bitmap.Config.ARGB_4444));
+        BlurredPicture picture1 = createSamplePicture(20, 30, 40);
+        BlurredPicture picture2 = BlurredPicture.blurredPicture(Bitmap.createBitmap(2, 3, Bitmap.Config.ARGB_4444), "name");
         underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         underTest.call();
@@ -95,17 +94,17 @@ public class DiffCounterTest {
     @Test(expected = IllegalArgumentException.class)
     @Config(shadows = {CustomShadowBitmap.class})
     public void testCallWhenThereIsDifferenceInPictureHeight() {
-        Picture picture1 = createSamplePicture(20, 30, 40);
-        Picture picture2 = picture("name", Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_4444));
+        BlurredPicture picture1 = createSamplePicture(20, 30, 40);
+        BlurredPicture picture2 = BlurredPicture.blurredPicture(Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_4444), "name");
         underTest = new DiffCounter(countDownLatch, picture1, picture2, ImmutableSet.<Coordinate>of());
 
         underTest.call();
     }
 
-    private Picture createSamplePicture(int red, int green, int blue) {
+    private BlurredPicture createSamplePicture(int red, int green, int blue) {
         Bitmap bitmap1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_4444);
         fillBitmap(bitmap1, Color.rgb(red, green, blue));
-        return picture("name", bitmap1);
+        return BlurredPicture.blurredPicture(bitmap1, "name");
     }
 
     private void fillBitmap(Bitmap bitmap1, int color) {

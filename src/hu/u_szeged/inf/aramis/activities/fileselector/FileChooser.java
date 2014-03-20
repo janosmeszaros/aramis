@@ -73,7 +73,7 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
         collector.addPictures(pictures);
         try {
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
-            ProcessResult processResult = processor.processImages(diffCoordinates, pictures);
+            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
             startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
         } catch (InterruptedException e) {
             e.printStackTrace();

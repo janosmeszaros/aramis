@@ -14,25 +14,26 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.utils.FilterUtils;
 
 import static android.graphics.Color.blue;
 import static android.graphics.Color.green;
 import static android.graphics.Color.red;
-import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 import static java.lang.Math.abs;
 
 public class DiffCounter implements Callable<Set<Coordinate>> {
-    public static final int BORDER = 50;
+    public static final int BORDER = 20;
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffCounter.class);
     private final CountDownLatch countDownLatch;
-    private final Picture first;
-    private final Picture second;
+    private final BlurredPicture first;
+    private final BlurredPicture second;
     private final Set<Coordinate> allDifferenceCoordinates;
 
-    public DiffCounter(CountDownLatch countDownLatch, Picture first, Picture second, Set<Coordinate> allDifferenceCoordinates) {
-        if (first.bitmap.getWidth() != second.bitmap.getWidth() || first.bitmap.getHeight() != second.bitmap.getHeight()) {
+    public DiffCounter(CountDownLatch countDownLatch, BlurredPicture first, BlurredPicture second, Set<Coordinate> allDifferenceCoordinates) {
+        if (first.picture.bitmap.getWidth() != second.picture.bitmap.getWidth() || first.picture.bitmap.getHeight() != second.picture.bitmap.getHeight()) {
             throw new IllegalArgumentException("There are differences in the two picture dimensions");
         }
         this.countDownLatch = countDownLatch;
@@ -45,7 +46,7 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
     public Set<Coordinate> call() {
         Set<Coordinate> coordinates;
         if (allDifferenceCoordinates.isEmpty()) {
-            coordinates = getDiffCoordinatesFromAllThePixels();
+            coordinates = getDiffCoordinatesFromAllPixels();
         } else {
             coordinates = getDiffCoordinatesFromDiffs();
         }
@@ -53,36 +54,50 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
         return coordinates;
     }
 
-    private Set<Coordinate> getDiffCoordinatesFromAllThePixels() {
+    private Set<Coordinate> getDiffCoordinatesFromAllPixels() {
         LOGGER.info("Start creating diff");
-        Bitmap diffBitmap = second.bitmap.copy(second.bitmap.getConfig(), true);
-        Set<Coordinate> coordinates = Sets.newLinkedHashSet();
-        for (int x = 0; x < first.bitmap.getWidth(); x++) {
-            for (int y = 0; y < first.bitmap.getHeight(); y++) {
-                if (countTotalDiff(first.bitmap.getPixel(x, y), second.bitmap.getPixel(x, y)) > BORDER) {
-                    coordinates.add(coordinate(x, y));
-                    diffBitmap.setPixel(x, y, Color.BLUE);
+        Bitmap firstBitmap = first.picture.bitmap;
+        Bitmap secondBitmap = second.picture.bitmap;
+        Bitmap diffBitmap = Bitmap.createBitmap(firstBitmap.getWidth(), firstBitmap.getHeight(), Bitmap.Config.RGB_565);
+        for (int x = 0; x < firstBitmap.getWidth(); x++) {
+            for (int y = 0; y < firstBitmap.getHeight(); y++) {
+                if (countTotalDiff(firstBitmap.getPixel(x, y), secondBitmap.getPixel(x, y)) > BORDER) {
+                    diffBitmap.setPixel(x, y, Color.WHITE);
                 }
             }
         }
-        LOGGER.info("Number of differences: {}", coordinates.size());
-        savePicture(Picture.picture(Joiner.on("_").join(first.name, second.name, "diff"), diffBitmap));
-        return coordinates;
+        Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
+        Bitmap closed = FilterUtils.morphologicalClosure(filteredBitmap);
+        savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
+        return getResult(closed);
     }
 
     private Set<Coordinate> getDiffCoordinatesFromDiffs() {
         LOGGER.info("Start creating diff with given coordinates");
-        Bitmap diffBitmap = second.bitmap.copy(second.bitmap.getConfig(), true);
-        Set<Coordinate> coordinates = Sets.newLinkedHashSet();
+        Bitmap firstBitmap = first.picture.bitmap;
+        Bitmap secondBitmap = second.picture.bitmap;
+        Bitmap diffBitmap = Bitmap.createBitmap(firstBitmap.getWidth(), firstBitmap.getHeight(), Bitmap.Config.RGB_565);
         for (Coordinate coordinate : allDifferenceCoordinates) {
-            if (countTotalDiff(first.bitmap.getPixel(coordinate.x, coordinate.y), second.bitmap.getPixel(coordinate.x, coordinate.y)) > BORDER) {
-                coordinates.add(coordinate(coordinate.x, coordinate.y));
-                diffBitmap.setPixel(coordinate.x, coordinate.y, Color.BLUE);
+            if (countTotalDiff(firstBitmap.getPixel(coordinate.x, coordinate.y), secondBitmap.getPixel(coordinate.x, coordinate.y)) > BORDER) {
+                diffBitmap.setPixel(coordinate.x, coordinate.y, Color.WHITE);
             }
         }
-        LOGGER.info("Number of differences: {}", coordinates.size());
-        savePicture(Picture.picture(Joiner.on("_").join(first.name, second.name, "diff"), diffBitmap));
-        return coordinates;
+        Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
+        Bitmap closed = FilterUtils.morphologicalClosure(filteredBitmap);
+        savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
+        return getResult(closed);
+    }
+
+    private Set<Coordinate> getResult(Bitmap bitmap) {
+        Set<Coordinate> result = Sets.newLinkedHashSet();
+        for (int x = 0; x < bitmap.getWidth(); x++) {
+            for (int y = 0; y < bitmap.getHeight(); y++) {
+                if (bitmap.getPixel(x, y) == Color.WHITE) {
+                    result.add(Coordinate.coordinate(x, y));
+                }
+            }
+        }
+        return result;
     }
 
     protected void savePicture(Picture picture) {

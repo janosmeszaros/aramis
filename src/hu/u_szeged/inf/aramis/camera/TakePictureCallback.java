@@ -26,6 +26,7 @@ import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
@@ -72,7 +73,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     protected void evaluate() {
         try {
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
-            List<Picture> pictures = collector.getPictures();
+            List<BlurredPicture> pictures = collector.getPictures();
             ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures);
             startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
         } catch (InterruptedException e) {

@@ -11,37 +11,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureEvaluator {
     private final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
 
-    public Bitmap evaluate(Picture first, Picture second) {
-        Bitmap output = first.bitmap.copy(first.bitmap.getConfig(), true);
-        List<Picture> pictures = Lists.newArrayList(first, second);
-        for (int x = 0; x < first.bitmap.getWidth(); x++) {
-            for (int y = 0; y < first.bitmap.getWidth(); y++) {
-                output.setPixel(x, y, evaluatePixel(pictures, x, y));
-            }
-        }
-        return output;
-    }
-
-    public Bitmap evaluate(List<Picture> pictures) {
-        Bitmap original = pictures.get(pictures.size() - 1).bitmap;
-        Bitmap output = original.copy(original.getConfig(), true);
-        for (int x = 0; x < original.getWidth(); x++) {
-            for (int y = 0; y < original.getHeight(); y++) {
-                Integer color = evaluatePixel(pictures, x, y);
-                output.setPixel(x, y, color);
-            }
-        }
-        return output;
-    }
-
-    public Bitmap evaluate(List<Picture> pictures, Set<Coordinate> coordinates) {
-        Bitmap original = pictures.get(pictures.size() - 1).bitmap;
+    public Bitmap evaluate(List<BlurredPicture> pictures, Set<Coordinate> coordinates) {
+        Bitmap original = pictures.get(pictures.size() - 1).picture.bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
         LOGGER.info("Starting evaluate pictures!");
         LOGGER.debug("Coordinates number: {}", coordinates.size());
@@ -61,10 +38,10 @@ public class PictureEvaluator {
         return output;
     }
 
-    private Integer evaluatePixel(List<Picture> pictures, int x, int y) {
+    private Integer evaluatePixel(List<BlurredPicture> pictures, int x, int y) {
         List<Integer> pixelsFromPictures = Lists.newArrayList();
-        for (Picture picture : pictures) {
-            int pixel = picture.bitmap.getPixel(x, y);
+        for (BlurredPicture picture : pictures) {
+            int pixel = picture.picture.bitmap.getPixel(x, y);
             pixelsFromPictures.add(pixel);
         }
         Collections.sort(pixelsFromPictures);

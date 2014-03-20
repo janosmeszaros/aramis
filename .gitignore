@@ -2,7 +2,6 @@ target/
 gen/
 aa/
 bin/
-libs/
 .classpath
 .idea/
 .project

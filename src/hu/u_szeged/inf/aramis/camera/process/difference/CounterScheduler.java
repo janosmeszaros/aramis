@@ -14,8 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
+import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Picture;
 
 public class CounterScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CounterScheduler.class);
@@ -32,12 +32,12 @@ public class CounterScheduler {
         return new CounterScheduler(countDown, executorService);
     }
 
-    public void schedule(Picture one, Picture two) {
+    public void schedule(BlurredPicture one, BlurredPicture two) {
         FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(new DiffCounter(countDown, one, two, ImmutableSet.<Coordinate>of()));
         startTask(task);
     }
 
-    public FutureTask<Set<Coordinate>> schedule(Picture one, Picture two, Set<Coordinate> differenceCoordinates) {
+    public FutureTask<Set<Coordinate>> schedule(BlurredPicture one, BlurredPicture two, Set<Coordinate> differenceCoordinates) {
         FutureTask<Set<Coordinate>> task = new FutureTask<Set<Coordinate>>(new DiffCounter(countDown, one, two, differenceCoordinates));
         startTask(task);
         return task;
