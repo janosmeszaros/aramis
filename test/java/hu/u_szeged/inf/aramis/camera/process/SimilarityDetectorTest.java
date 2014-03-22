@@ -27,14 +27,14 @@ public class SimilarityDetectorTest {
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceTrue() {
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.9);
+        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.7);
 
         assertThat(similar, equalTo(true));
     }
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceFalse() {
-        boolean similar = underTest.isSimilar(cluster1, cluster3, 0.9);
+        boolean similar = underTest.isSimilar(cluster1, cluster3, 0.7);
 
         assertThat(similar, equalTo(false));
     }
@@ -55,7 +55,7 @@ public class SimilarityDetectorTest {
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceTrueAreaDiffTrue() {
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.9);
+        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.7);
 
         assertThat(similar, equalTo(true));
     }

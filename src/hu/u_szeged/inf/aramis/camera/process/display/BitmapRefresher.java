@@ -21,12 +21,13 @@ public class BitmapRefresher {
         this.backgroundPicture = backgroundPicture;
     }
 
-    public Map<Picture, Bitmap> refreshBitmaps(Map<Picture, Cluster<Coordinate>> clusters) {
+    public Map<Picture, Bitmap> refreshBitmaps(Map<Picture, Bitmap> pictures,
+                                               Map<Picture, Cluster<Coordinate>> clusters) {
         Map<Picture, Bitmap> result = Maps.newLinkedHashMap();
         for (Map.Entry<Picture, Cluster<Coordinate>> entry : clusters.entrySet()) {
             Picture key = entry.getKey();
             Cluster<Coordinate> cluster = entry.getValue();
-            Bitmap resultBitmap = evaluator.switchColors(key.bitmap, backgroundPicture.bitmap, clusters.get(key).getPoints());
+            Bitmap resultBitmap = evaluator.switchColors(pictures.get(key), backgroundPicture.bitmap, cluster.getPoints());
             result.put(key, resultBitmap);
         }
         return result;

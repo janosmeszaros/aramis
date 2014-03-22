@@ -70,6 +70,7 @@ public class FullScreenImageAdapter extends PagerAdapter {
             @Override
             public void onClick(View v) {
                 activity.finish();
+                PictureSaver.newAlbum();
             }
         });
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +78,7 @@ public class FullScreenImageAdapter extends PagerAdapter {
             public void onClick(View v) {
                 savePictures();
                 activity.finish();
+                PictureSaver.newAlbum();
             }
         });
         ((ViewPager) container).addView(viewLayout);

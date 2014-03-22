@@ -68,7 +68,6 @@ public class DifferencePicturesActivity extends Activity {
         Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
         ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas = createAreas(transformedMap, sortedBitmaps);
 
-
         BitmapRefresher refresher = new BitmapRefresher(evaluator, picture("result", BitmapFactory.decodeFile(backgroundPicturePath)));
         ChainResolver chainResolver = new ChainResolver(motionSeriesList);
         fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
@@ -139,7 +138,7 @@ public class DifferencePicturesActivity extends Activity {
                         if (table.contains(pointX, pointY)) {
                             Cluster<Coordinate> cluster = table.get(pointX, pointY);
                             MotionSeries series = chainResolver.findChainFor(actualPicture, cluster);
-                            pictures.putAll(refresher.refreshBitmaps(series.getMap()));
+                            pictures.putAll(refresher.refreshBitmaps(pictures, series.getMap()));
                             removeClusterFromTouchableAreas(series);
                             List<MotionSeries> seriesList = chainResolver.remove(series);
                             pictures.putAll(chainDetector.markChains(pictures, seriesList));

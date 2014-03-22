@@ -40,7 +40,6 @@ public class ClusterComparator {
             Map<Picture, List<Cluster<Coordinate>>> clusters) {
         Map<Picture, List<ClusterWithMoments>> sortedMap =
                 sortMapWithPicture(getMomentsForClusters(clusters));
-
         return countResult(sortedMap);
     }
 

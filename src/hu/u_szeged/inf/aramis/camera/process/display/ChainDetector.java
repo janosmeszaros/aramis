@@ -35,16 +35,15 @@ public class ChainDetector {
     }
 
     public Map<Picture, Bitmap> markChains(Map<Picture, Bitmap> input, List<MotionSeries> motionSeriesList) {
-        Map<Picture, Bitmap> result = Maps.newHashMap();
         for (MotionSeries motionSeries : motionSeriesList) {
             for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
                 Picture key = entry.getKey();
-                result.put(key, setPixels(motionSeries.getColor(),
+                input.put(key, setPixels(motionSeries.getColor(),
                         input.get(key), entry.getValue().getPoints()));
                 LOGGER.info("Coloring pixels in {} to {}", entry.getKey().name, motionSeries.getColor());
             }
         }
-        return result;
+        return input;
     }
 
     private Bitmap setPixels(int color, Bitmap bitmap, List<Coordinate> coordinates) {
@@ -70,7 +69,9 @@ public class ChainDetector {
                     }
                 }
                 if (!isPutted) {
-                    motionSeriesListForActualPicture.add(new MotionSeries(randomColor(), pair, entry.getKey()));
+                    int color = randomColor();
+                    LOGGER.info("Create series with color {}", color);
+                    motionSeriesListForActualPicture.add(new MotionSeries(color, pair, entry.getKey()));
                 }
             }
             motionSeriesList.addAll(motionSeriesListForActualPicture);

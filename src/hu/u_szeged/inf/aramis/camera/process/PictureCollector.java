@@ -36,7 +36,6 @@ public class PictureCollector {
 
     public void addPicture(Picture picture) {
         pictures.add(BlurredPicture.blurredPicture(picture.bitmap, picture.name));
-        picture.bitmap.recycle();
         int actualSize = pictures.size();
         if (actualSize > 1) {
             counterScheduler.schedule(pictures.get(actualSize - 2), pictures.get(actualSize - 1));
@@ -57,6 +56,8 @@ public class PictureCollector {
     }
 
     public List<BlurredPicture> getPictures() {
-        return ImmutableList.copyOf(pictures);
+        ImmutableList<BlurredPicture> blurredPictures = ImmutableList.copyOf(pictures);
+        clear();
+        return blurredPictures;
     }
 }

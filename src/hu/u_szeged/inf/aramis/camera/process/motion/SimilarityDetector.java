@@ -27,9 +27,19 @@ public class SimilarityDetector {
                              Double momentsDistance) {
         Rectangle boundingBox1 = findBoundingBox(first.getPoints());
         Rectangle boundingBox2 = findBoundingBox(second.getPoints());
-        return momentsDistance > momentBorder
-                && countEuclideanDistance(boundingBox1, boundingBox2) < distanceBorder
-                && countAreaDifference(boundingBox1, boundingBox2) < areaDifferenceBorder;
+        Double distance = countEuclideanDistance(boundingBox1, boundingBox2);
+        Double areaDifference = countAreaDifference(first.getPoints().size(), second.getPoints().size());
+        boolean result = momentsDistance < momentBorder
+                && distance < distanceBorder
+                && areaDifference < areaDifferenceBorder;
+        if (!result) {
+            LOGGER.info("{} and {} not similar. distance: {}, areaDiff: {}, moments: {}", new Object[]{first, second, distance, areaDifference, momentsDistance});
+        }
+        return result;
+    }
+
+    private Double countAreaDifference(int size, int size1) {
+        return Double.valueOf(abs(size - size1));
     }
 
     private Double countAreaDifference(Rectangle boundingBox1, Rectangle boundingBox2) {

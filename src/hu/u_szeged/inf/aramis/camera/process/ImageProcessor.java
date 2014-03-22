@@ -30,6 +30,7 @@ import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
+import hu.u_szeged.inf.aramis.utils.FilterUtils;
 
 import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
 import static hu.u_szeged.inf.aramis.model.BlurredPicture.blurredPicture;
@@ -59,10 +60,9 @@ public class ImageProcessor {
 
     public ProcessResult processImages(Set<Coordinate> diffCoordinates, List<BlurredPicture> pictures) throws InterruptedException, ExecutionException, IOException {
         Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
-        Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", result);
+        Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", FilterUtils.sharp(result));
         PictureSaver.save(backgroundPicture);
         multipleCounterScheduler.schedule(blurredPicture(backgroundPicture.bitmap, backgroundPicture.name), pictures, diffCoordinates);
-        backgroundPicture.bitmap.recycle();
         Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);

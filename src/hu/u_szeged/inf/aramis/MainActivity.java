@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import hu.u_szeged.inf.aramis.activities.fileselector.FileChooser_;
 import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
-import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 
 import static android.hardware.Camera.open;
 
@@ -73,7 +72,6 @@ public class MainActivity extends Activity {
     public void takePicture() {
         LOGGER.info("Start taking pictures!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        PictureSaver.newAlbum();
         camera.setOneShotPreviewCallback(takePictureCallback);
     }
 

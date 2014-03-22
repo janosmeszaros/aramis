@@ -27,8 +27,10 @@ public class PairMatcher {
         ImmutableList.Builder<Pair> builder = ImmutableList.builder();
         for (Cluster<Coordinate> rowKey : data.rowKeySet()) {
             Map<Double, Pair> result = createOrder(data, rowKey);
-            if (!result.isEmpty()) {
-                builder.add(Lists.reverse(Lists.newArrayList(result.values())).get(0));
+            if (result.isEmpty()) {
+                builder.add(pair(rowKey));
+            } else {
+                builder.add(Lists.newArrayList(result.values()).get(0));
             }
         }
         return builder.build();

@@ -9,7 +9,7 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 
 import java.io.Serializable;
 
-public class Pair implements Serializable {
+public class Pair implements Serializable, Comparable<Pair> {
     public final Cluster<Coordinate> first;
     public final Optional<Cluster<Coordinate>> second;
 
@@ -28,7 +28,7 @@ public class Pair implements Serializable {
     }
 
     public static Pair pair(Cluster<Coordinate> first) {
-        return new Pair(first, null);
+        return new Pair(first);
     }
 
     @Override
@@ -44,5 +44,10 @@ public class Pair implements Serializable {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public int compareTo(Pair o) {
+        return -1;
     }
 }

@@ -33,7 +33,7 @@ import static hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler.
 import static hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler.multipleCounterScheduler;
 
 public class AppModule implements Module {
-    public static final double MOMENT_BORDER = 4.0;
+    public static final double MOMENT_BORDER = 3.5;
     public static final double DISTANCE_BORDER = 250.0;
     public static final double AREA_DIFFERENCE_BORDER = 2000.0;
     public static final BigDecimal PRE_FILTER_SIMILARITY_BORDER = new BigDecimal(0.90);
