@@ -3,7 +3,7 @@ package hu.u_szeged.inf.aramis.camera.process.motion;
 import hu.u_szeged.inf.aramis.model.ClusterWithMoments;
 import hu.u_szeged.inf.aramis.model.MomentsVector;
 
-import static java.lang.Math.abs;
+import static hu.u_szeged.inf.aramis.utils.DistanceUtils.canberraDistance;
 
 public final class MomentsDistanceCounter {
 
@@ -21,10 +21,4 @@ public final class MomentsDistanceCounter {
         result += canberraDistance(firstMomentVector.seventh, secondMomentVector.seventh);
         return result;
     }
-
-    private double canberraDistance(double first, double second) {
-        return abs(first - second) / (abs(first) + abs(second));
-    }
-
-
 }

@@ -45,6 +45,8 @@ public class MultipleCounterScheduler {
             FutureTask<Set<Coordinate>> task = entry.getValue();
             result.put(picture, task.get());
         }
+        tasks.clear();
+        counterScheduler.clear();
         return result;
     }
 }

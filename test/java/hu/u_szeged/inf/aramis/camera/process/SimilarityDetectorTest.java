@@ -1,5 +1,7 @@
 package hu.u_szeged.inf.aramis.camera.process;
 
+import com.google.common.base.Optional;
+
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +10,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import hu.u_szeged.inf.aramis.camera.process.motion.SimilarityDetector;
 import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.SimilarityVector;
 
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,46 +30,46 @@ public class SimilarityDetectorTest {
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceTrue() {
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.7);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster2, 0.7);
 
-        assertThat(similar, equalTo(true));
+        assertThat(similar.isPresent(), equalTo(true));
     }
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceFalse() {
-        boolean similar = underTest.isSimilar(cluster1, cluster3, 0.7);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster3, 0.7);
 
-        assertThat(similar, equalTo(false));
+        assertThat(similar.isPresent(), equalTo(false));
     }
 
     @Test
     public void testIsSimilarWhenMomentsFalseDistanceFalse() {
-        boolean similar = underTest.isSimilar(cluster1, cluster3, 0.8);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster3, 0.8);
 
-        assertThat(similar, equalTo(false));
+        assertThat(similar.isPresent(), equalTo(false));
     }
 
     @Test
     public void testIsSimilarWhenMomentsFalseDistanceTrue() {
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.8);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster2, 0.9);
 
-        assertThat(similar, equalTo(false));
+        assertThat(similar.isPresent(), equalTo(false));
     }
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceTrueAreaDiffTrue() {
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.7);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster2, 0.7);
 
-        assertThat(similar, equalTo(true));
+        assertThat(similar.isPresent(), equalTo(true));
     }
 
     @Test
     public void testIsSimilarWhenMomentsTrueDistanceTrueAreaDiffFalse() {
         cluster1.addPoint(coordinate(2, 2));
 
-        boolean similar = underTest.isSimilar(cluster1, cluster2, 0.9);
+        Optional<SimilarityVector> similar = underTest.countSimilarity(cluster1, cluster2, 0.9);
 
-        assertThat(similar, equalTo(false));
+        assertThat(similar.isPresent(), equalTo(false));
     }
 
     private Cluster<Coordinate> createCluster(int i) {

@@ -29,7 +29,10 @@ public class ClusterComparator {
     private final PairMatcher pairMatcher;
     private final PreFilter preFilter;
 
-    public ClusterComparator(MomentsCounter momentsCounter, MomentsDistanceCounter counter, PairMatcher pairMatcher, PreFilter preFilter) {
+    public ClusterComparator(MomentsCounter momentsCounter,
+                             MomentsDistanceCounter counter,
+                             PairMatcher pairMatcher,
+                             PreFilter preFilter) {
         this.momentsCounter = momentsCounter;
         this.distanceCounter = counter;
         this.pairMatcher = pairMatcher;
@@ -49,9 +52,7 @@ public class ClusterComparator {
         Picture previousPicture = null;
         for (Map.Entry<Picture, List<ClusterWithMoments>> entry : sortedMap.entrySet()) {
             List<ClusterWithMoments> actualMomentsList = entry.getValue();
-            Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> table =
-                    countMomentsDistances(previousMomentsList, actualMomentsList);
-            List<Pair> similarPairs = pairMatcher.findSimilarPairs(table);
+            List<Pair> similarPairs = pairMatcher.findSimilarPairs(previousMomentsList, actualMomentsList);
             if (!similarPairs.isEmpty()) {
                 result.put(previousPicture, similarPairs);
                 LOGGER.info("Similar pairs for {} : {}", previousPicture.name, similarPairs);
