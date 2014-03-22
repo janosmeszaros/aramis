@@ -31,11 +31,16 @@ public class ChainDetector {
                 return input.bitmap.copy(input.bitmap.getConfig(), true);
             }
         }));
+        return markChains(result, motionSeriesList);
+    }
+
+    public Map<Picture, Bitmap> markChains(Map<Picture, Bitmap> input, List<MotionSeries> motionSeriesList) {
+        Map<Picture, Bitmap> result = Maps.newHashMap();
         for (MotionSeries motionSeries : motionSeriesList) {
             for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
                 Picture key = entry.getKey();
                 result.put(key, setPixels(motionSeries.getColor(),
-                        result.get(key), entry.getValue().getPoints()));
+                        input.get(key), entry.getValue().getPoints()));
                 LOGGER.info("Coloring pixels in {} to {}", entry.getKey().name, motionSeries.getColor());
             }
         }

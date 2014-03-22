@@ -136,17 +136,28 @@ public class DifferencePicturesActivity extends Activity {
                         LOGGER.info("Touch happened on x:{} y:{}", pointX, pointY);
                         Picture actualPicture = getElementAt(pager.getCurrentItem());
                         Table<Integer, Integer, Cluster<Coordinate>> table = areas.get(actualPicture);
-                        LOGGER.info("Got Table size for {} : {}", actualPicture.name, table.size());
                         if (table.contains(pointX, pointY)) {
                             Cluster<Coordinate> cluster = table.get(pointX, pointY);
-                            Map<Picture, Cluster<Coordinate>> map = chainResolver.findChainFor(actualPicture, cluster);
-                            pictures.putAll(refresher.refreshBitmaps(map));
+                            MotionSeries series = chainResolver.findChainFor(actualPicture, cluster);
+                            pictures.putAll(refresher.refreshBitmaps(series.getMap()));
+                            removeClusterFromTouchableAreas(series);
+                            List<MotionSeries> seriesList = chainResolver.remove(series);
+                            pictures.putAll(chainDetector.markChains(pictures, seriesList));
                             fullScreenImageAdapter.setPictures(pictures);
                             fullScreenImageAdapter.notifyDataSetChanged();
                         }
                     }
             }
             return false;
+        }
+
+        private void removeClusterFromTouchableAreas(MotionSeries series) {
+            for (Map.Entry<Picture, Cluster<Coordinate>> entry : series.getMap().entrySet()) {
+                Table<Integer, Integer, Cluster<Coordinate>> clusterTable = areas.get(entry.getKey());
+                for (Coordinate coordinate : entry.getValue().getPoints()) {
+                    clusterTable.remove(coordinate.x, coordinate.y);
+                }
+            }
         }
 
         private Picture getElementAt(int position) {
