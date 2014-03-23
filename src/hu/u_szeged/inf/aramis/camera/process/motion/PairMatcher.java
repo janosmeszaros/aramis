@@ -17,6 +17,7 @@ import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.SimilarityVector;
 
+import static hu.u_szeged.inf.aramis.model.Pair.pair;
 import static hu.u_szeged.inf.aramis.model.SimilarityVector.similarityVector;
 
 public class PairMatcher {
@@ -34,7 +35,10 @@ public class PairMatcher {
     public List<Pair> findSimilarPairs(List<ClusterWithMoments> previous,
                                        List<ClusterWithMoments> actual) {
         ImmutableList.Builder<Pair> builder = ImmutableList.builder();
-        Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector> table = createTable(previous, actual);
+        android.util.Pair<List<Pair>, Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector>> pairAndTable =
+                createTable(previous, actual);
+        builder.addAll(pairAndTable.first);
+        Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector> table = pairAndTable.second;
         while (table.size() > 0) {
             Pair minimumInTable = findMinimumInTable(table);
             table.row(minimumInTable.first).clear();
@@ -49,20 +53,19 @@ public class PairMatcher {
         Pair result = null;
         for (Cluster<Coordinate> rowKey : table.rowKeySet()) {
             for (Map.Entry<Cluster<Coordinate>, SimilarityVector> row : table.row(rowKey).entrySet()) {
-                LOGGER.info("Compare min {} to {}", new Object[]{min.momentsDistance, row.getValue().momentsDistance});
                 if (min.compareTo(row.getValue()) > -1) {
                     min = row.getValue();
-                    result = Pair.pair(rowKey, row.getKey());
+                    result = pair(rowKey, row.getKey());
                 }
             }
         }
-        LOGGER.info("Min pair found {}", result);
         return result;
     }
 
-    private Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector> createTable(
+    private android.util.Pair<List<Pair>, Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector>> createTable(
             List<ClusterWithMoments> previous,
             List<ClusterWithMoments> actual) {
+        ImmutableList.Builder<Pair> orphanBuilder = ImmutableList.builder();
         Table<Cluster<Coordinate>, Cluster<Coordinate>, SimilarityVector> similarityTable = HashBasedTable.create();
         for (ClusterWithMoments previousMoments : previous) {
             for (ClusterWithMoments actualMoments : actual) {
@@ -74,10 +77,10 @@ public class PairMatcher {
                 if (similarityVector.isPresent()) {
                     similarityTable.put(previousCluster, actualCluster, similarityVector.get());
                 } else {
-                    //Todo save orphans
+                    orphanBuilder.add(pair(previousCluster));
                 }
             }
         }
-        return similarityTable;
+        return new android.util.Pair(orphanBuilder.build(), similarityTable);
     }
 }

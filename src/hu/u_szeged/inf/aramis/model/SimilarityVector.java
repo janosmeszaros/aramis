@@ -16,7 +16,9 @@ public class SimilarityVector implements Comparable<SimilarityVector> {
     }
 
     @Override
-    public int compareTo(SimilarityVector value) {
-        return momentsDistance.compareTo(value.momentsDistance);
+    public int compareTo(SimilarityVector other) {
+        return momentsDistance.compareTo(other.momentsDistance) +
+                euclideanDistance.compareTo(other.euclideanDistance) +
+                areaDifference.compareTo(other.areaDifference);
     }
 }
