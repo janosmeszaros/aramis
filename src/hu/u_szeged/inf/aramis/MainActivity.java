@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @AfterViews
@@ -71,7 +72,6 @@ public class MainActivity extends Activity {
     @Click(R.id.button_capture)
     public void takePicture() {
         LOGGER.info("Start taking pictures!");
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         camera.setOneShotPreviewCallback(takePictureCallback);
     }
 

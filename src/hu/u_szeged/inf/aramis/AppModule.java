@@ -86,10 +86,9 @@ public class AppModule implements Module {
     @Provides
     @Singleton
     private ClusterComparator clusterComparator(MomentsCounter momentsCounter,
-                                                MomentsDistanceCounter distanceCounter,
                                                 PairMatcher pairMatcher,
                                                 PreFilter preFilter) {
-        return new ClusterComparator(momentsCounter, distanceCounter, pairMatcher, preFilter);
+        return new ClusterComparator(momentsCounter, pairMatcher, preFilter);
     }
 
     @Provides

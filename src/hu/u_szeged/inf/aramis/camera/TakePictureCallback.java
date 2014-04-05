@@ -116,7 +116,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         try {
             LOGGER.info("Sleeping for 1000 ms!");
             Thread.sleep(1000);
-            LOGGER.info("He is awake!!");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

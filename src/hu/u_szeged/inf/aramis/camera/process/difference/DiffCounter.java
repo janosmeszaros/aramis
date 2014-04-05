@@ -66,8 +66,8 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
                 }
             }
         }
-        Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
-        Bitmap closed = FilterUtils.morphologicalClosure(filteredBitmap);
+        //Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
+        Bitmap closed = FilterUtils.morphologicalClosure(diffBitmap);
         savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
         return getResult(closed);
     }
@@ -82,8 +82,8 @@ public class DiffCounter implements Callable<Set<Coordinate>> {
                 diffBitmap.setPixel(coordinate.x, coordinate.y, Color.WHITE);
             }
         }
-        Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
-        Bitmap closed = FilterUtils.morphologicalClosure(filteredBitmap);
+        //Bitmap filteredBitmap = FilterUtils.filterWithMedian(diffBitmap);
+        Bitmap closed = FilterUtils.morphologicalClosure(diffBitmap);
         savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
         return getResult(closed);
     }

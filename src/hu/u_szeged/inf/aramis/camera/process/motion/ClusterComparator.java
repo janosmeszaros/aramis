@@ -1,12 +1,10 @@
 package hu.u_szeged.inf.aramis.camera.process.motion;
 
 import com.google.common.base.Function;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
@@ -25,16 +23,13 @@ import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
 public class ClusterComparator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterComparator.class);
     private final MomentsCounter momentsCounter;
-    private final MomentsDistanceCounter distanceCounter;
     private final PairMatcher pairMatcher;
     private final PreFilter preFilter;
 
     public ClusterComparator(MomentsCounter momentsCounter,
-                             MomentsDistanceCounter counter,
                              PairMatcher pairMatcher,
                              PreFilter preFilter) {
         this.momentsCounter = momentsCounter;
-        this.distanceCounter = counter;
         this.pairMatcher = pairMatcher;
         this.preFilter = preFilter;
     }
@@ -79,21 +74,6 @@ public class ClusterComparator {
                 return Pair.pair(input.cluster);
             }
         });
-    }
-
-    private Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> countMomentsDistances(
-            List<ClusterWithMoments> previousMomentsList, List<ClusterWithMoments> actualMomentsList) {
-        Table<Cluster<Coordinate>, Cluster<Coordinate>, Double> result = HashBasedTable.create();
-        for (ClusterWithMoments previousMoments : previousMomentsList) {
-            for (ClusterWithMoments actualMoments : actualMomentsList) {
-                double distance = distanceCounter.countDistances(previousMoments, actualMoments);
-                result.put(previousMoments.cluster,
-                        actualMoments.cluster,
-                        distance);
-                //LOGGER.info("Distance for {} {} = {}", new Object[]{previousMoments.momentsVector, actualMoments.momentsVector, distance});
-            }
-        }
-        return result;
     }
 
     private Map<Picture, List<ClusterWithMoments>> getMomentsForClusters(Map<Picture, List<Cluster<Coordinate>>> clusters) {

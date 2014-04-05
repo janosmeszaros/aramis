@@ -20,7 +20,7 @@ public class PictureEvaluator {
     public Bitmap evaluate(List<BlurredPicture> pictures, Set<Coordinate> coordinates) {
         Bitmap original = pictures.get(pictures.size() - 1).picture.bitmap;
         Bitmap output = original.copy(original.getConfig(), true);
-        LOGGER.info("Starting evaluate pictures!");
+        LOGGER.info("Start evaluating pictures!");
         LOGGER.debug("Coordinates number: {}", coordinates.size());
         for (Coordinate coordinate : coordinates) {
             Integer color = evaluatePixel(pictures, coordinate.x, coordinate.y);

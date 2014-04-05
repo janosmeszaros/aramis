@@ -6,34 +6,30 @@
 
     <ImageView
         android:id="@+id/imgDisplay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleType="fitCenter" />
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="fitXY" />
 
     <Button
         android:id="@+id/btnClose"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="10dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="15dp"
-        android:paddingBottom="2dp"
-        android:paddingTop="2dp"
-        android:text="Close"
+        android:layout_alignParentBottom="true"
+        android:text="@string/closeButton"
         android:textColor="#ffffff" />
 
     <Button
         android:id="@+id/btnSave"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="60dp"
-        android:paddingBottom="2dp"
-        android:paddingTop="2dp"
-        android:text="Save&amp;Close"
-        android:textColor="#ffffff" />
+        android:layout_height="wrap_content"
+        android:text="@string/closeAndSaveButton"
+        android:textColor="#ffffff"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>
