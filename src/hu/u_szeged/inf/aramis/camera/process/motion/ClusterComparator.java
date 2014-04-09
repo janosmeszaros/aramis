@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
+import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.ClusterWithMoments;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
@@ -34,44 +34,44 @@ public class ClusterComparator {
         this.preFilter = preFilter;
     }
 
-    public Map<Picture, List<Pair>> countSimilarity(
+    public Map<Picture, List<ClusterPair>> countSimilarity(
             Map<Picture, List<Cluster<Coordinate>>> clusters) {
         Map<Picture, List<ClusterWithMoments>> sortedMap =
                 sortMapWithPicture(getMomentsForClusters(clusters));
         return countResult(sortedMap);
     }
 
-    private Map<Picture, List<Pair>> countResult(Map<Picture, List<ClusterWithMoments>> sortedMap) {
-        Map<Picture, List<Pair>> result = Maps.newLinkedHashMap();
+    private Map<Picture, List<ClusterPair>> countResult(Map<Picture, List<ClusterWithMoments>> sortedMap) {
+        Map<Picture, List<ClusterPair>> result = Maps.newLinkedHashMap();
         List<ClusterWithMoments> previousMomentsList = Lists.newArrayList();
         Picture previousPicture = null;
         for (Map.Entry<Picture, List<ClusterWithMoments>> entry : sortedMap.entrySet()) {
             List<ClusterWithMoments> actualMomentsList = entry.getValue();
-            List<Pair> similarPairs = pairMatcher.findSimilarPairs(previousMomentsList, actualMomentsList);
-            if (!similarPairs.isEmpty()) {
-                result.put(previousPicture, similarPairs);
-                LOGGER.info("Similar pairs for {} : {}", previousPicture.name, similarPairs);
+            List<ClusterPair> similarClusterPairs = pairMatcher.findSimilarPairs(previousMomentsList, actualMomentsList);
+            if (!similarClusterPairs.isEmpty()) {
+                result.put(previousPicture, similarClusterPairs);
+                LOGGER.info("Similar pairs for {} : {}", previousPicture.name, similarClusterPairs);
             } else {
                 LOGGER.info("No similar pairs!");
                 if (previousPicture != null) {
-                    List<Pair> listOfPairs = transformOrphanClusters(previousMomentsList);
-                    LOGGER.info("Adding orphan clusters to {} : {}", previousPicture.name, listOfPairs);
-                    result.put(previousPicture, listOfPairs);
+                    List<ClusterPair> listOfClusterPairs = transformOrphanClusters(previousMomentsList);
+                    LOGGER.info("Adding orphan clusters to {} : {}", previousPicture.name, listOfClusterPairs);
+                    result.put(previousPicture, listOfClusterPairs);
                 }
             }
             previousMomentsList = actualMomentsList;
             previousPicture = entry.getKey();
         }
-        List<Pair> listOfPairs = transformOrphanClusters(previousMomentsList);
-        result.put(previousPicture, listOfPairs);
+        List<ClusterPair> listOfClusterPairs = transformOrphanClusters(previousMomentsList);
+        result.put(previousPicture, listOfClusterPairs);
         return result;
     }
 
-    private List<Pair> transformOrphanClusters(List<ClusterWithMoments> previousMomentsList) {
-        return Lists.transform(previousMomentsList, new Function<ClusterWithMoments, Pair>() {
+    private List<ClusterPair> transformOrphanClusters(List<ClusterWithMoments> previousMomentsList) {
+        return Lists.transform(previousMomentsList, new Function<ClusterWithMoments, ClusterPair>() {
             @Override
-            public Pair apply(ClusterWithMoments input) {
-                return Pair.pair(input.cluster);
+            public ClusterPair apply(ClusterWithMoments input) {
+                return ClusterPair.pair(input.cluster);
             }
         });
     }

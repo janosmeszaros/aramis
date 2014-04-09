@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class ChainDetector {
@@ -34,16 +34,16 @@ public class ChainDetector {
         return markChains(result, motionSeriesList);
     }
 
-    public Map<Picture, Bitmap> markChains(Map<Picture, Bitmap> input, List<MotionSeries> motionSeriesList) {
+    public Map<Picture, Bitmap> markChains(Map<Picture, Bitmap> pictures, List<MotionSeries> motionSeriesList) {
         for (MotionSeries motionSeries : motionSeriesList) {
             for (Map.Entry<Picture, Cluster<Coordinate>> entry : motionSeries.getMap().entrySet()) {
                 Picture key = entry.getKey();
-                input.put(key, setPixels(motionSeries.getColor(),
-                        input.get(key), entry.getValue().getPoints()));
+                pictures.put(key, setPixels(motionSeries.getColor(),
+                        pictures.get(key), entry.getValue().getPoints()));
                 LOGGER.info("Coloring pixels in {} to {}", entry.getKey().name, motionSeries.getColor());
             }
         }
-        return input;
+        return pictures;
     }
 
     private Bitmap setPixels(int color, Bitmap bitmap, List<Coordinate> coordinates) {
@@ -54,24 +54,24 @@ public class ChainDetector {
         return result;
     }
 
-    public List<MotionSeries> spotChains(Map<Picture, List<Pair>> map) {
+    public List<MotionSeries> spotChains(Map<Picture, List<ClusterPair>> map) {
         List<MotionSeries> motionSeriesList = Lists.newArrayList();
-        for (Map.Entry<Picture, List<Pair>> entry : map.entrySet()) {
+        for (Map.Entry<Picture, List<ClusterPair>> entry : map.entrySet()) {
             LOGGER.info("Processing pairs for picture #{}", entry.getKey().name);
             List<MotionSeries> motionSeriesListForActualPicture = Lists.newArrayList();
-            for (Pair pair : entry.getValue()) {
-                boolean isPutted = false;
+            for (ClusterPair clusterPair : entry.getValue()) {
+                boolean isPut = false;
                 for (MotionSeries motionSeries : motionSeriesList) {
-                    if (motionSeries.putValue(entry.getKey(), pair)) {
-                        isPutted = true;
+                    if (motionSeries.putValue(entry.getKey(), clusterPair)) {
+                        isPut = true;
                         LOGGER.info("Putting to series for picture {} to {}", entry.getKey().name, motionSeries.getColor());
                         break;
                     }
                 }
-                if (!isPutted) {
+                if (!isPut) {
                     int color = randomColor();
                     LOGGER.info("Create series with color {}", color);
-                    motionSeriesListForActualPicture.add(new MotionSeries(color, pair, entry.getKey()));
+                    motionSeriesListForActualPicture.add(new MotionSeries(color, clusterPair, entry.getKey()));
                 }
             }
             motionSeriesList.addAll(motionSeriesListForActualPicture);

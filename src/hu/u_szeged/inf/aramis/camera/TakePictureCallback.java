@@ -27,8 +27,8 @@ import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
+import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 
@@ -86,7 +86,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     }
 
     @UiThread
-    protected void startPagerActivity(Map<String, List<Pair>> resultBitmaps, String filePathForPicture) {
+    protected void startPagerActivity(Map<String, List<ClusterPair>> resultBitmaps, String filePathForPicture) {
         DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
                 backgroundPicturePath(filePathForPicture).start();
     }

@@ -26,8 +26,8 @@ import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
+import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Coordinate;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 import hu.u_szeged.inf.aramis.utils.FilterUtils;
@@ -65,7 +65,7 @@ public class ImageProcessor {
         multipleCounterScheduler.schedule(blurredPicture(backgroundPicture.bitmap, backgroundPicture.name), pictures, diffCoordinates);
         Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
-        Map<Picture, List<Pair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
+        Map<Picture, List<ClusterPair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
         return processResult(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
     }
 

@@ -9,26 +9,26 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 
 import java.io.Serializable;
 
-public class Pair implements Serializable, Comparable<Pair> {
+public class ClusterPair implements Serializable, Comparable<ClusterPair> {
     public final Cluster<Coordinate> first;
     public final Optional<Cluster<Coordinate>> second;
 
-    private Pair(Cluster<Coordinate> first, Cluster<Coordinate> second) {
+    private ClusterPair(Cluster<Coordinate> first, Cluster<Coordinate> second) {
         this.first = first;
         this.second = Optional.fromNullable(second);
     }
 
-    private Pair(Cluster<Coordinate> first) {
+    private ClusterPair(Cluster<Coordinate> first) {
         this.first = first;
         this.second = Optional.absent();
     }
 
-    public static Pair pair(Cluster<Coordinate> first, Cluster<Coordinate> second) {
-        return new Pair(first, second);
+    public static ClusterPair pair(Cluster<Coordinate> first, Cluster<Coordinate> second) {
+        return new ClusterPair(first, second);
     }
 
-    public static Pair pair(Cluster<Coordinate> first) {
-        return new Pair(first);
+    public static ClusterPair pair(Cluster<Coordinate> first) {
+        return new ClusterPair(first);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class Pair implements Serializable, Comparable<Pair> {
     }
 
     @Override
-    public int compareTo(Pair o) {
+    public int compareTo(ClusterPair o) {
         return -1;
     }
 }

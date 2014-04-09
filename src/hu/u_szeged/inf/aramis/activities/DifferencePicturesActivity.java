@@ -3,10 +3,11 @@ package hu.u_szeged.inf.aramis.activities;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.MotionEvent;
-import android.view.View;
+import android.util.Pair;
+import android.view.Display;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSortedMap;
@@ -31,9 +32,10 @@ import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.display.BitmapRefresher;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainResolver;
+import hu.u_szeged.inf.aramis.camera.process.motion.OnMotionTouchListener;
+import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
-import hu.u_szeged.inf.aramis.model.Pair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
@@ -47,7 +49,7 @@ public class DifferencePicturesActivity extends Activity {
     @ViewById(R.id.pager)
     ViewPager pager;
     @Extra("resultBitmapPaths")
-    Map<String, List<Pair>> resultBitmapPaths;
+    Map<String, List<ClusterPair>> resultBitmapPaths;
     @Extra("backgroundPicturePath")
     String backgroundPicturePath;
     @Inject
@@ -62,114 +64,55 @@ public class DifferencePicturesActivity extends Activity {
 
     @AfterViews
     protected void setupResult() {
-        Map<Picture, List<Pair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
+        Map<Picture, List<ClusterPair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
+        Picture background = picture("background", BitmapFactory.decodeFile(backgroundPicturePath));
+
         List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
         Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
         Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
-        ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas = createAreas(transformedMap, sortedBitmaps);
+        ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas =
+                createAreas(transformedMap, sortedBitmaps, background.bitmap);
 
-        BitmapRefresher refresher = new BitmapRefresher(evaluator, picture("result", BitmapFactory.decodeFile(backgroundPicturePath)));
+        BitmapRefresher refresher = new BitmapRefresher(evaluator,
+                background);
         ChainResolver chainResolver = new ChainResolver(motionSeriesList);
         fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
-        TouchListener touchListener = new TouchListener(refresher, chainResolver, sortedBitmaps, areas);
+        OnMotionTouchListener touchListener = new OnMotionTouchListener(refresher,
+                chainResolver, sortedBitmaps, fullScreenImageAdapter, pager, chainDetector, areas);
         pager.setAdapter(fullScreenImageAdapter);
         pager.setOnTouchListener(touchListener);
     }
 
     private ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> createAreas(
-            Map<Picture, List<Pair>> original,
-            Map<Picture, Bitmap> marked) {
+            Map<Picture, List<ClusterPair>> original,
+            Map<Picture, Bitmap> marked,
+            Bitmap bitmap) {
         ImmutableSortedMap.Builder<Picture, Table<Integer, Integer, Cluster<Coordinate>>> builder =
                 ImmutableSortedMap.<Picture, Table<Integer, Integer, Cluster<Coordinate>>>naturalOrder();
+        Pair<Double, Double> scalePair = countScale(bitmap);
         for (Map.Entry<Picture, Bitmap> entry : marked.entrySet()) {
-            builder.put(entry.getKey(), processListOfPairs(original.get(entry.getKey())));
+            builder.put(entry.getKey(), processListOfPairs(original.get(entry.getKey()), scalePair));
         }
         return builder.build();
     }
 
-    private Table<Integer, Integer, Cluster<Coordinate>> processListOfPairs(List<Pair> pairs) {
+    private Table<Integer, Integer, Cluster<Coordinate>> processListOfPairs(List<ClusterPair> clusterPairs,
+                                                                            Pair<Double, Double> scalePair) {
         Table<Integer, Integer, Cluster<Coordinate>> table = HashBasedTable.create();
-        for (Pair pair : pairs) {
-            for (Coordinate coordinate : pair.first.getPoints()) {
-                table.put(coordinate.x, coordinate.y, pair.first);
+        for (ClusterPair clusterPair : clusterPairs) {
+            for (Coordinate coordinate : clusterPair.first.getPoints()) {
+                int firstCoordinate = (int) (coordinate.x * scalePair.first);
+                int secondCoordinate = (int) (coordinate.y * scalePair.second);
+                table.put(firstCoordinate, secondCoordinate, clusterPair.first);
             }
         }
         return table;
     }
 
-    private class TouchListener implements View.OnTouchListener {
-        private final static int TOLERANCE = 50;
-
-        private final BitmapRefresher refresher;
-        private final ChainResolver chainResolver;
-        private final Map<Picture, Bitmap> pictures;
-        private final ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas;
-
-        private int pointX;
-        private int pointY;
-
-        private TouchListener(BitmapRefresher refresher,
-                              ChainResolver chainResolver,
-                              Map<Picture, Bitmap> pictures,
-                              ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas) {
-            this.refresher = refresher;
-            this.chainResolver = chainResolver;
-            this.pictures = pictures;
-            this.areas = areas;
-        }
-
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
-            final int action = event.getAction();
-            switch (action) {
-                case MotionEvent.ACTION_MOVE:
-                    return false;
-                case MotionEvent.ACTION_DOWN:
-                    pointX = (int) event.getX();
-                    pointY = (int) event.getY();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    boolean sameX = pointX + TOLERANCE > event.getX() && pointX - TOLERANCE < event.getX();
-                    boolean sameY = pointY + TOLERANCE > event.getY() && pointY - TOLERANCE < event.getY();
-                    if (sameX && sameY) {
-                        LOGGER.info("Touch happened on x:{} y:{}", pointX, pointY);
-                        Picture actualPicture = getElementAt(pager.getCurrentItem());
-                        Table<Integer, Integer, Cluster<Coordinate>> table = areas.get(actualPicture);
-                        if (table.contains(pointX, pointY)) {
-                            Cluster<Coordinate> cluster = table.get(pointX, pointY);
-                            MotionSeries series = chainResolver.findChainFor(actualPicture, cluster);
-                            pictures.putAll(refresher.refreshBitmaps(pictures, series.getMap()));
-                            removeClusterFromTouchableAreas(series);
-                            List<MotionSeries> seriesList = chainResolver.remove(series);
-                            pictures.putAll(chainDetector.markChains(pictures, seriesList));
-                            fullScreenImageAdapter.setPictures(pictures);
-                            fullScreenImageAdapter.notifyDataSetChanged();
-                        }
-                    }
-            }
-            return false;
-        }
-
-        private void removeClusterFromTouchableAreas(MotionSeries series) {
-            for (Map.Entry<Picture, Cluster<Coordinate>> entry : series.getMap().entrySet()) {
-                Table<Integer, Integer, Cluster<Coordinate>> clusterTable = areas.get(entry.getKey());
-                for (Coordinate coordinate : entry.getValue().getPoints()) {
-                    clusterTable.remove(coordinate.x, coordinate.y);
-                }
-            }
-        }
-
-        private Picture getElementAt(int position) {
-            int i = 0;
-            for (Map.Entry<Picture, Bitmap> entry : pictures.entrySet()) {
-                if (i == position) {
-                    return entry.getKey();
-                }
-                i++;
-            }
-            throw new IllegalArgumentException(String.format("Cant find %d th element in the map", position));
-        }
-
+    private Pair<Double, Double> countScale(Bitmap bitmap) {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return new Pair<Double, Double>(size.x / (double) bitmap.getWidth(), size.y / (double) bitmap.getHeight());
     }
-
 }

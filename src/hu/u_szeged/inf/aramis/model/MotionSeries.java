@@ -13,16 +13,16 @@ public class MotionSeries {
 
     private final int color;
     private Map<Picture, Cluster<Coordinate>> map;
-    private Pair lastItem;
+    private ClusterPair lastItem;
 
-    public MotionSeries(int color, Pair lastItem, Picture picture) {
+    public MotionSeries(int color, ClusterPair lastItem, Picture picture) {
         map = Maps.newLinkedHashMap();
         this.color = color;
         this.lastItem = lastItem;
         this.map.put(picture, lastItem.first);
     }
 
-    public boolean putValue(Picture picture, Pair nextItem) {
+    public boolean putValue(Picture picture, ClusterPair nextItem) {
         if (compareItems(nextItem)) {
             map.put(picture, nextItem.first);
             lastItem = nextItem;
@@ -32,7 +32,7 @@ public class MotionSeries {
         }
     }
 
-    private boolean compareItems(Pair next) {
+    private boolean compareItems(ClusterPair next) {
         if (lastItem.second.isPresent()) {
             return compareClusters(next.first, lastItem.second.get());
         } else {

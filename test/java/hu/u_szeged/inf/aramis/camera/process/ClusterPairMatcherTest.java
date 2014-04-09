@@ -17,7 +17,7 @@ import hu.u_szeged.inf.aramis.model.Coordinate;
 import static hu.u_szeged.inf.aramis.model.Coordinate.coordinate;
 
 @RunWith(RobolectricTestRunner.class)
-public class PairMatcherTest {
+public class ClusterPairMatcherTest {
     private final Cluster<Coordinate> cluster1 = createCluster(Lists.newArrayList(coordinate(1, 1), coordinate(1, 2)));
     private final Cluster<Coordinate> cluster2 = createCluster(Lists.newArrayList(coordinate(3, 1), coordinate(2, 2), coordinate(5, 2)));
     private final Cluster<Coordinate> cluster3 = createCluster(Lists.newArrayList(coordinate(2, 1), coordinate(3, 2), coordinate(5, 2)));
