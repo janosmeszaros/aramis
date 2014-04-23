@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
-import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
@@ -40,7 +39,6 @@ import static hu.u_szeged.inf.aramis.model.Picture.picture;
 public class TakePictureCallback implements Camera.PreviewCallback {
     public static final int PICTURE_NUMBER = 5;
     private static final Logger LOGGER = LoggerFactory.getLogger(TakePictureCallback.class);
-    protected ProgressBarHandler progressBarHandler;
     @App
     protected MainApplication application;
     @Inject
@@ -91,25 +89,14 @@ public class TakePictureCallback implements Camera.PreviewCallback {
                 backgroundPicturePath(filePathForPicture).start();
     }
 
-    @UiThread
-    void stopProgress() {
-        progressBarHandler.stop();
-    }
-
-    @UiThread
-    void startProgress() {
-        progressBarHandler = new ProgressBarHandler(context);
-        progressBarHandler.start();
-    }
-
     @Background
     protected void decodePicture(byte[] bytes, String name) {
         LOGGER.info("Start decoding picture");
         decodeYUV420SP(bytes, size.width, size.height);
         LOGGER.info("Picture decoded");
         Picture picture = picture(name, createBitmap(pixels, size.width, size.height, ARGB_8888));
-        collector.addPicture(picture);
         PictureSaver.save(picture);
+        collector.addPicture(picture);
     }
 
     private void sleep() {

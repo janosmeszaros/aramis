@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.App;
+import com.googlecode.androidannotations.annotations.Background;
 import com.googlecode.androidannotations.annotations.Click;
 import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.UiThread;
@@ -31,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
+import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
@@ -51,6 +53,7 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
     protected ImageProcessor processor;
     @Inject
     protected PictureCollector collector;
+    private ProgressBarHandler progressBarHandler;
 
     private File currentDir;
     private FileArrayAdapter adapter;
@@ -68,10 +71,16 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
 
     @Click(R.id.button_process)
     public void process() {
-        List<Picture> pictures = getPictures();
-        savePictures(pictures);
-        collector.addPictures(pictures);
+        startProgress();
+        processPictures();
+    }
+
+    @Background
+    protected void processPictures() {
         try {
+            List<Picture> pictures = getPictures();
+            savePictures(pictures);
+            collector.addPictures(pictures);
             Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
             ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
             startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
@@ -81,8 +90,21 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            stopProgress();
         }
     }
+
+    @UiThread
+    void stopProgress() {
+        progressBarHandler.stop();
+    }
+
+    void startProgress() {
+        progressBarHandler = new ProgressBarHandler(this);
+        progressBarHandler.start();
+    }
+
 
     private void savePictures(List<Picture> pictures) {
         for (Picture picture : pictures) {
