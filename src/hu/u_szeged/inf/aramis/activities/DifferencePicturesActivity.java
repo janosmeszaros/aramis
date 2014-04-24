@@ -64,12 +64,16 @@ public class DifferencePicturesActivity extends Activity {
 
     @AfterViews
     protected void setupResult() {
+        LOGGER.info("Starting");
         Map<Picture, List<ClusterPair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
         Picture background = picture("background", BitmapFactory.decodeFile(backgroundPicturePath));
 
+        LOGGER.info("Spotting chains!");
         List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
+        LOGGER.info("Marking chains!");
         Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
         Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
+        LOGGER.info("Create areas");
         ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas =
                 createAreas(transformedMap, sortedBitmaps, background.bitmap);
 
@@ -77,6 +81,7 @@ public class DifferencePicturesActivity extends Activity {
                 background);
         ChainResolver chainResolver = new ChainResolver(motionSeriesList);
         fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
+        LOGGER.info("Create on touch listener");
         OnMotionTouchListener touchListener = new OnMotionTouchListener(refresher,
                 chainResolver, sortedBitmaps, fullScreenImageAdapter, pager, chainDetector, areas);
         pager.setAdapter(fullScreenImageAdapter);

@@ -2,17 +2,16 @@ package hu.u_szeged.inf.aramis.camera.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
-import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureCollector {
@@ -42,7 +41,7 @@ public class PictureCollector {
         }
     }
 
-    public Set<Coordinate> getDiffCoordinates() throws InterruptedException, ExecutionException {
+    public Table<Integer, Integer, Boolean> getDiffCoordinates() throws InterruptedException, ExecutionException {
         return counterScheduler.getDiffCoordinates();
     }
 

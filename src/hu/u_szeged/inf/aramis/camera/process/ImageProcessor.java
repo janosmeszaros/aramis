@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
 import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
+import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.motion.ClusterComparator;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
@@ -52,27 +53,29 @@ public class ImageProcessor {
     private Clustering clustering;
     @Inject
     private Context context;
+    @Inject
+    private ChainDetector chainDetector;
 
     @AfterInject
     void injectRoboGuiceDependencies() {
         application.getInjector().injectMembers(this);
     }
 
-    public ProcessResult processImages(Set<Coordinate> diffCoordinates, List<BlurredPicture> pictures) throws InterruptedException, ExecutionException, IOException {
+    public ProcessResult processImages(Table<Integer, Integer, Boolean> diffCoordinates, List<BlurredPicture> pictures) throws InterruptedException, ExecutionException, IOException {
         Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
         Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", FilterUtils.sharp(result));
         PictureSaver.save(backgroundPicture);
         multipleCounterScheduler.schedule(blurredPicture(backgroundPicture.bitmap, backgroundPicture.name), pictures, diffCoordinates);
-        Map<Picture, Set<Coordinate>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
+        Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<ClusterPair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
         return processResult(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
     }
 
-    private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Set<Coordinate>> resultBitmaps) {
+    private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps) {
         Map<Picture, List<Cluster<Coordinate>>> clusterisedPictures = Maps.newLinkedHashMap();
-        for (Map.Entry<Picture, Set<Coordinate>> entry : resultBitmaps.entrySet()) {
-            List<Cluster<Coordinate>> clusterList = clustering.cluster(transformSet(entry.getValue()));
+        for (Map.Entry<Picture, Table<Integer, Integer, Boolean>> entry : resultBitmaps.entrySet()) {
+            List<Cluster<Coordinate>> clusterList = clustering.cluster(entry.getValue());
             clusterisedPictures.put(entry.getKey(), clusterList);
         }
         return clusterisedPictures;

@@ -3,6 +3,7 @@ package hu.u_szeged.inf.aramis.camera;
 import android.content.Context;
 import android.hardware.Camera;
 
+import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterInject;
 import com.googlecode.androidannotations.annotations.App;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
@@ -27,7 +27,6 @@ import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.ClusterPair;
-import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 
@@ -70,7 +69,7 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     @Background
     protected void evaluate() {
         try {
-            Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
+            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
             List<BlurredPicture> pictures = collector.getPictures();
             ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures);
             startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);

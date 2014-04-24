@@ -9,6 +9,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.App;
@@ -18,6 +19,9 @@ import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.UiThread;
 import com.googlecode.androidannotations.annotations.ViewById;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
@@ -26,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
@@ -37,7 +40,6 @@ import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.ClusterPair;
-import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 
@@ -45,6 +47,8 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 @EActivity(R.layout.file_list)
 public class FileChooser extends Activity implements AdapterView.OnItemClickListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileChooser.class);
+
     @App
     protected MainApplication application;
     @ViewById(R.id.list_files)
@@ -81,7 +85,7 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
             List<Picture> pictures = getPictures();
             savePictures(pictures);
             collector.addPictures(pictures);
-            Set<Coordinate> diffCoordinates = collector.getDiffCoordinates();
+            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
             ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
             startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
         } catch (InterruptedException e) {
@@ -131,6 +135,7 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
 
     @UiThread
     protected void startPagerActivity(Map<String, List<ClusterPair>> resultBitmaps, String filePathForPicture) {
+        LOGGER.info("Starting pager activity!");
         DifferencePicturesActivity_.intent(this).resultBitmapPaths(resultBitmaps).
                 backgroundPicturePath(filePathForPicture).start();
     }

@@ -64,7 +64,9 @@ public class FullScreenImageAdapter extends PagerAdapter {
         btnSave = (Button) viewLayout.findViewById(R.id.btnSave);
 
         Picture actualPicture = getElementAt(position);
-        imgDisplay.setImageBitmap(pictures.get(actualPicture));
+        Bitmap actualBitmap = pictures.get(actualPicture);
+        LOGGER.info("Displaying {}th bitmap with size {}, {}", new Object[]{position, actualBitmap.getHeight(), actualBitmap.getWidth()});
+        imgDisplay.setImageBitmap(actualBitmap);
 
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
