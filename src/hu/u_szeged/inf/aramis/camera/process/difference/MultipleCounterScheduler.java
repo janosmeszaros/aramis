@@ -27,7 +27,7 @@ public class MultipleCounterScheduler {
         return new MultipleCounterScheduler(counterScheduler);
     }
 
-    public void schedule(BlurredPicture background, List<BlurredPicture> pictures, Table<Integer, Integer, Boolean> differenceCoordinates) {
+    public void schedule(Picture background, List<BlurredPicture> pictures, Table<Integer, Integer, Boolean> differenceCoordinates) {
         for (BlurredPicture picture : pictures) {
             LOGGER.info("Schedule task for background and {}", picture.picture.name);
             FutureTask<Table<Integer, Integer, Boolean>> task = counterScheduler.schedule(background, picture, differenceCoordinates);

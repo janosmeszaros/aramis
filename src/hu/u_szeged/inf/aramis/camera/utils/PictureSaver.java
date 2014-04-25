@@ -26,9 +26,9 @@ public class PictureSaver {
     private static final Logger LOGGER = LoggerFactory.getLogger(PictureSaver.class);
 
 
-    public static void save(Picture picture) {
+    public static synchronized void save(Picture picture) {
         try {
-            File file = FileUtils.getFile(getFilePathForPicture(picture));
+            File file = FileUtils.getFile(getFilePathForPicture(picture.name));
             if (file.createNewFile()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 picture.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
@@ -41,8 +41,8 @@ public class PictureSaver {
         }
     }
 
-    public static String getFilePathForPicture(Picture picture) throws IOException {
-        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(Joiner.on("/").join(ALBUM_NAME, ACTUAL_ALBUM)), File.separator, picture.name, ".jpeg");
+    public static String getFilePathForPicture(String name) throws IOException {
+        return StringUtils.join(DirectoryHelper.getAlbumStorageDir(Joiner.on("/").join(ALBUM_NAME, ACTUAL_ALBUM)), File.separator, name, ".jpeg");
     }
 
     public static String getFilePathForRootDir() throws IOException {

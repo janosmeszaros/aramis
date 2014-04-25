@@ -9,38 +9,48 @@ import android.support.v4.view.ViewPager;
 import android.util.Pair;
 import android.view.Display;
 
+import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
+import com.googlecode.androidannotations.annotations.Background;
 import com.googlecode.androidannotations.annotations.EActivity;
 import com.googlecode.androidannotations.annotations.Extra;
 import com.googlecode.androidannotations.annotations.RoboGuice;
+import com.googlecode.androidannotations.annotations.UiThread;
 import com.googlecode.androidannotations.annotations.ViewById;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.adapter.FullScreenImageAdapter;
+import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
+import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
+import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.display.BitmapRefresher;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainResolver;
 import hu.u_szeged.inf.aramis.camera.process.motion.OnMotionTouchListener;
+import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.MotionSeries;
 import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static hu.u_szeged.inf.aramis.utils.MapUtils.sortMapWithPicture;
-import static hu.u_szeged.inf.aramis.utils.MapUtils.transformStringMapToPicture;
 
 @EActivity(R.layout.picture_swiper)
 @RoboGuice
@@ -48,44 +58,94 @@ public class DifferencePicturesActivity extends Activity {
     private static final Logger LOGGER = LoggerFactory.getLogger(DifferencePicturesActivity.class);
     @ViewById(R.id.pager)
     ViewPager pager;
+    @Extra("picturePaths")
+    List<String> picturePaths;
     @Extra("resultBitmapPaths")
     Map<String, List<ClusterPair>> resultBitmapPaths;
     @Extra("backgroundPicturePath")
     String backgroundPicturePath;
     @Inject
+    protected ImageProcessor processor;
+    @Inject
     PictureEvaluator evaluator;
+    @Inject
+    protected PictureCollector collector;
     @Inject
     ChainDetector chainDetector;
     private FullScreenImageAdapter fullScreenImageAdapter;
+    private ProgressBarHandler progressBarHandler;
+    private OnMotionTouchListener touchListener;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
     @AfterViews
+    protected void afterViews() {
+        startProgress();
+        setupResult();
+    }
+
+    @Background
     protected void setupResult() {
-        LOGGER.info("Starting");
-        Map<Picture, List<ClusterPair>> transformedMap = sortMapWithPicture(transformStringMapToPicture(resultBitmapPaths));
-        Picture background = picture("background", BitmapFactory.decodeFile(backgroundPicturePath));
+        try {
+            List<Picture> pictures = Lists.transform(picturePaths, new Function<String, Picture>() {
+                @Override
+                public Picture apply(String input) {
+                    try {
+                        return picture(input, BitmapFactory.decodeFile(PictureSaver.getFilePathForPicture(input), new BitmapFactory.Options()));
+                    } catch (IOException e) {
+                        LOGGER.error("Cannot find specified file with name {}", input);
+                        return null;
+                    }
+                }
+            });
+            collector.addPictures(pictures);
+            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
+            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures(), pictures);
 
-        LOGGER.info("Spotting chains!");
-        List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
-        LOGGER.info("Marking chains!");
-        Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
-        Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
-        LOGGER.info("Create areas");
-        ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas =
-                createAreas(transformedMap, sortedBitmaps, background.bitmap);
+            Map<Picture, List<ClusterPair>> transformedMap = sortMapWithPicture(processResult.stringListMap);
+            Picture background = processResult.backgroundPicture;
 
-        BitmapRefresher refresher = new BitmapRefresher(evaluator,
-                background);
-        ChainResolver chainResolver = new ChainResolver(motionSeriesList);
-        fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
-        LOGGER.info("Create on touch listener");
-        OnMotionTouchListener touchListener = new OnMotionTouchListener(refresher,
-                chainResolver, sortedBitmaps, fullScreenImageAdapter, pager, chainDetector, areas);
+            List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
+            Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
+            Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
+            ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas =
+                    createAreas(transformedMap, sortedBitmaps, background.bitmap);
+
+            BitmapRefresher refresher = new BitmapRefresher(evaluator,
+                    background);
+            ChainResolver chainResolver = new ChainResolver(motionSeriesList);
+            fullScreenImageAdapter = new FullScreenImageAdapter(sortedBitmaps, this);
+            touchListener = new OnMotionTouchListener(refresher,
+                    chainResolver, sortedBitmaps, fullScreenImageAdapter, pager, chainDetector, areas);
+            setPager();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            stopProgress();
+        }
+    }
+
+    @UiThread
+    protected void setPager() {
         pager.setAdapter(fullScreenImageAdapter);
         pager.setOnTouchListener(touchListener);
+    }
+
+
+    @UiThread
+    void stopProgress() {
+        progressBarHandler.stop();
+    }
+
+    void startProgress() {
+        progressBarHandler = new ProgressBarHandler(this);
+        progressBarHandler.start();
     }
 
     private ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> createAreas(

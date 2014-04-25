@@ -3,7 +3,6 @@ package hu.u_szeged.inf.aramis.camera.process;
 import android.content.Context;
 import android.graphics.Bitmap;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
@@ -17,7 +16,6 @@ import org.joda.time.DateTime;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
@@ -33,11 +31,8 @@ import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.model.ProcessResult;
 import hu.u_szeged.inf.aramis.utils.FilterUtils;
 
-import static hu.u_szeged.inf.aramis.camera.utils.PictureSaver.getFilePathForPicture;
-import static hu.u_szeged.inf.aramis.model.BlurredPicture.blurredPicture;
 import static hu.u_szeged.inf.aramis.model.Picture.picture;
 import static hu.u_szeged.inf.aramis.model.ProcessResult.processResult;
-import static hu.u_szeged.inf.aramis.utils.MapUtils.transformPictureMapToString;
 
 @EBean
 public class ImageProcessor {
@@ -61,15 +56,15 @@ public class ImageProcessor {
         application.getInjector().injectMembers(this);
     }
 
-    public ProcessResult processImages(Table<Integer, Integer, Boolean> diffCoordinates, List<BlurredPicture> pictures) throws InterruptedException, ExecutionException, IOException {
+    public ProcessResult processImages(Table<Integer, Integer, Boolean> diffCoordinates, List<BlurredPicture> pictures, List<Picture> pictureList) throws InterruptedException, ExecutionException, IOException {
         Bitmap result = evaluator.evaluate(pictures, diffCoordinates);
         Picture backgroundPicture = picture(PictureSaver.DATE_TIME_FORMATTER.print(new DateTime()) + "_background", FilterUtils.sharp(result));
         PictureSaver.save(backgroundPicture);
-        multipleCounterScheduler.schedule(blurredPicture(backgroundPicture.bitmap, backgroundPicture.name), pictures, diffCoordinates);
+        multipleCounterScheduler.schedule(backgroundPicture, pictures, diffCoordinates);
         Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<ClusterPair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
-        return processResult(transformPictureMapToString(pictureListMap), getFilePathForPicture(backgroundPicture));
+        return processResult(pictureListMap, backgroundPicture);
     }
 
     private Map<Picture, List<Cluster<Coordinate>>> getClustersForPictures(Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps) {
@@ -79,13 +74,5 @@ public class ImageProcessor {
             clusterisedPictures.put(entry.getKey(), clusterList);
         }
         return clusterisedPictures;
-    }
-
-    private Table<Integer, Integer, Boolean> transformSet(Set<Coordinate> diffCoordinates) {
-        Table<Integer, Integer, Boolean> table = HashBasedTable.create(diffCoordinates.size(), diffCoordinates.size());
-        for (Coordinate coordinate : diffCoordinates) {
-            table.put(coordinate.x, coordinate.y, false);
-        }
-        return table;
     }
 }

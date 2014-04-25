@@ -4,7 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 
 import org.slf4j.Logger;
@@ -24,21 +26,34 @@ import static android.graphics.Color.red;
 import static java.lang.Math.abs;
 
 public class DiffCounter implements Callable<Table<Integer, Integer, Boolean>> {
-    public static final int BORDER = 50;
+    public static final int BORDER = 20;
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffCounter.class);
+    private final Optional<BlurredPicture> first;
+    private final Optional<Picture> background;
     private final CountDownLatch countDownLatch;
-    private final BlurredPicture first;
     private final BlurredPicture second;
     private final Table<Integer, Integer, Boolean> allDifferenceCoordinates;
 
-    public DiffCounter(CountDownLatch countDownLatch, BlurredPicture first, BlurredPicture second, Table<Integer, Integer, Boolean> allDifferenceCoordinates) {
+    public DiffCounter(CountDownLatch countDownLatch, BlurredPicture first, BlurredPicture second) {
         if (first.picture.bitmap.getWidth() != second.picture.bitmap.getWidth() || first.picture.bitmap.getHeight() != second.picture.bitmap.getHeight()) {
             throw new IllegalArgumentException("There are differences in the two picture dimensions");
         }
         this.countDownLatch = countDownLatch;
-        this.first = first;
+        this.first = Optional.of(first);
+        this.background = Optional.absent();
         this.second = second;
-        this.allDifferenceCoordinates = allDifferenceCoordinates;
+        this.allDifferenceCoordinates = HashBasedTable.create();
+    }
+
+    public DiffCounter(CountDownLatch countDownLatch, Picture first, BlurredPicture second, Table<Integer, Integer, Boolean> allDifferenceCoordinates) {
+        if (first.bitmap.getWidth() != second.picture.bitmap.getWidth() || first.bitmap.getHeight() != second.picture.bitmap.getHeight()) {
+            throw new IllegalArgumentException("There are differences in the two picture dimensions");
+        }
+        this.countDownLatch = countDownLatch;
+        this.background = Optional.of(first);
+        this.first = Optional.absent();
+        this.second = second;
+        this.allDifferenceCoordinates = HashBasedTable.create(allDifferenceCoordinates);
     }
 
     @Override
@@ -55,7 +70,7 @@ public class DiffCounter implements Callable<Table<Integer, Integer, Boolean>> {
 
     private Table<Integer, Integer, Boolean> getDiffCoordinatesFromAllPixels() {
         LOGGER.info("Start creating diff");
-        Bitmap firstBitmap = first.picture.bitmap;
+        Bitmap firstBitmap = first.get().picture.bitmap;
         Bitmap secondBitmap = second.picture.bitmap;
         Bitmap diffBitmap = Bitmap.createBitmap(firstBitmap.getWidth(), firstBitmap.getHeight(), Bitmap.Config.RGB_565);
         for (int x = 0; x < firstBitmap.getWidth(); x++) {
@@ -66,29 +81,30 @@ public class DiffCounter implements Callable<Table<Integer, Integer, Boolean>> {
             }
         }
         Bitmap closed = FilterUtils.morphologicalClosure(diffBitmap);
-        savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
+        savePicture(Picture.picture(Joiner.on("_").join(first.get().picture.name, second.picture.name, "diff"), closed));
         return getResult(closed);
     }
 
     private Table<Integer, Integer, Boolean> getDiffCoordinatesFromDiffs() {
         LOGGER.info("Start creating diff with given coordinates no: {}", allDifferenceCoordinates.size());
-        Bitmap firstBitmap = first.picture.bitmap;
+        Bitmap firstBitmap = background.get().bitmap;
         Bitmap secondBitmap = second.picture.bitmap;
         Bitmap diffBitmap = Bitmap.createBitmap(firstBitmap.getWidth(), firstBitmap.getHeight(), Bitmap.Config.RGB_565);
         for (Table.Cell<Integer, Integer, Boolean> coordinate : allDifferenceCoordinates.cellSet()) {
             Integer x = coordinate.getRowKey();
             Integer y = coordinate.getColumnKey();
-            if (countTotalDiff(firstBitmap.getPixel(x, y), secondBitmap.getPixel(x, y)) > BORDER) {
+            int diff = countTotalDiff(firstBitmap.getPixel(x, y), secondBitmap.getPixel(x, y));
+            if (diff > BORDER) {
                 diffBitmap.setPixel(x, y, Color.WHITE);
             }
         }
+        savePicture(Picture.picture(Joiner.on("_").join(background.get().name, second.picture.name, "diff"), diffBitmap));
         Bitmap closed = FilterUtils.morphologicalClosure(diffBitmap);
-        savePicture(Picture.picture(Joiner.on("_").join(first.picture.name, second.picture.name, "diff"), closed));
         return getResult(closed);
     }
 
     private Table<Integer, Integer, Boolean> getResult(Bitmap bitmap) {
-        Table<Integer, Integer, Boolean> result = HashBasedTable.create();
+        ImmutableTable.Builder<Integer, Integer, Boolean> result = ImmutableTable.builder();
         for (int x = 0; x < bitmap.getWidth(); x++) {
             for (int y = 0; y < bitmap.getHeight(); y++) {
                 if (bitmap.getPixel(x, y) == Color.WHITE) {
@@ -96,7 +112,7 @@ public class DiffCounter implements Callable<Table<Integer, Integer, Boolean>> {
                 }
             }
         }
-        return result;
+        return result.build();
     }
 
     protected void savePicture(Picture picture) {

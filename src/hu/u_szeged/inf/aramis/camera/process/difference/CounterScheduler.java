@@ -1,6 +1,7 @@
 package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
+import hu.u_szeged.inf.aramis.model.Picture;
 
 public class CounterScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CounterScheduler.class);
@@ -31,11 +33,11 @@ public class CounterScheduler {
     }
 
     public void schedule(BlurredPicture one, BlurredPicture two) {
-        FutureTask<Table<Integer, Integer, Boolean>> task = new FutureTask<Table<Integer, Integer, Boolean>>(new DiffCounter(countDown, one, two, HashBasedTable.<Integer, Integer, Boolean>create()));
+        FutureTask<Table<Integer, Integer, Boolean>> task = new FutureTask<Table<Integer, Integer, Boolean>>(new DiffCounter(countDown, one, two));
         startTask(task);
     }
 
-    public FutureTask<Table<Integer, Integer, Boolean>> schedule(BlurredPicture one, BlurredPicture two, Table<Integer, Integer, Boolean> differenceCoordinates) {
+    public FutureTask<Table<Integer, Integer, Boolean>> schedule(Picture one, BlurredPicture two, Table<Integer, Integer, Boolean> differenceCoordinates) {
         FutureTask<Table<Integer, Integer, Boolean>> task = new FutureTask<Table<Integer, Integer, Boolean>>(new DiffCounter(countDown, one, two, differenceCoordinates));
         startTask(task);
         return task;
@@ -56,7 +58,7 @@ public class CounterScheduler {
             LOGGER.debug("Adding {} coordinates for task no: {}", coordinates.size(), tasks.indexOf(task));
             diffCoordinates.putAll(coordinates);
         }
-        return diffCoordinates;
+        return ImmutableTable.<Integer, Integer, Boolean>builder().putAll(diffCoordinates).build();
     }
 
     public void clear() {

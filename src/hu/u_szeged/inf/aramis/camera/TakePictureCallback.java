@@ -15,7 +15,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +27,6 @@ import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Picture;
-import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.createBitmap;
@@ -71,14 +69,12 @@ public class TakePictureCallback implements Camera.PreviewCallback {
         try {
             Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
             List<BlurredPicture> pictures = collector.getPictures();
-            ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures);
-            startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
+            //ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures, pictures);
+            //  startPagerActivity(processResult.stringListMap, processResult.backgroundPicture);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
         } catch (ExecutionException e) {
             LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
-        } catch (IOException e) {
-            LOGGER.error("IOException", ExceptionUtils.getRootCause(e));
         }
     }
 

@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessResult {
-    public final Map<String, List<ClusterPair>> stringListMap;
-    public final String backgroundFilePath;
+    public final Map<Picture, List<ClusterPair>> stringListMap;
+    public final Picture backgroundPicture;
 
-    public ProcessResult(Map<String, List<ClusterPair>> stringListMap, String backgroundFilePath) {
+    public ProcessResult(Map<Picture, List<ClusterPair>> stringListMap, Picture backgroundPicture) {
         this.stringListMap = stringListMap;
-        this.backgroundFilePath = backgroundFilePath;
+        this.backgroundPicture = backgroundPicture;
     }
 
-    public static ProcessResult processResult(Map<String, List<ClusterPair>> stringListMap, String filePathForPicture) {
-        return new ProcessResult(stringListMap, filePathForPicture);
+    public static ProcessResult processResult(Map<Picture, List<ClusterPair>> stringListMap, Picture backgroundPicture) {
+        return new ProcessResult(stringListMap, backgroundPicture);
     }
 }

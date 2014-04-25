@@ -9,8 +9,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Table;
-import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterViews;
 import com.googlecode.androidannotations.annotations.App;
 import com.googlecode.androidannotations.annotations.Background;
@@ -29,19 +27,13 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
 import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
-import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
-import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
-import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Picture;
-import hu.u_szeged.inf.aramis.model.ProcessResult;
 
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
@@ -53,10 +45,6 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
     protected MainApplication application;
     @ViewById(R.id.list_files)
     android.widget.ListView pictureList;
-    @Inject
-    protected ImageProcessor processor;
-    @Inject
-    protected PictureCollector collector;
     private ProgressBarHandler progressBarHandler;
 
     private File currentDir;
@@ -75,28 +63,14 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
 
     @Click(R.id.button_process)
     public void process() {
-        startProgress();
         processPictures();
     }
 
     @Background
     protected void processPictures() {
-        try {
-            List<Picture> pictures = getPictures();
-            savePictures(pictures);
-            collector.addPictures(pictures);
-            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
-            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
-            startPagerActivity(processResult.stringListMap, processResult.backgroundFilePath);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            stopProgress();
-        }
+        List<Picture> pictures = getPictures();
+        savePictures(pictures);
+        startPagerActivity(pictures);
     }
 
     @UiThread
@@ -134,10 +108,14 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
     }
 
     @UiThread
-    protected void startPagerActivity(Map<String, List<ClusterPair>> resultBitmaps, String filePathForPicture) {
+    protected void startPagerActivity(List<Picture> pictures) {
         LOGGER.info("Starting pager activity!");
-        DifferencePicturesActivity_.intent(this).resultBitmapPaths(resultBitmaps).
-                backgroundPicturePath(filePathForPicture).start();
+        DifferencePicturesActivity_.intent(this).picturePaths(Lists.transform(pictures, new Function<Picture, String>() {
+            @Override
+            public String apply(Picture input) {
+                return input.name;
+            }
+        })).start();
     }
 
     private void fill(File f) {
