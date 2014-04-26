@@ -40,7 +40,6 @@ public class ChainDetector {
                 Picture key = entry.getKey();
                 pictures.put(key, setPixels(motionSeries.getColor(),
                         pictures.get(key), entry.getValue().getPoints()));
-                LOGGER.info("Coloring pixels in {} to {}", entry.getKey().name, motionSeries.getColor());
             }
         }
         return pictures;
@@ -64,13 +63,11 @@ public class ChainDetector {
                 for (MotionSeries motionSeries : motionSeriesList) {
                     if (motionSeries.putValue(entry.getKey(), clusterPair)) {
                         isPut = true;
-                        LOGGER.info("Putting to series for picture {} to {}", entry.getKey().name, motionSeries.getColor());
                         break;
                     }
                 }
                 if (!isPut) {
                     int color = randomColor();
-                    LOGGER.info("Create series with color {}", color);
                     motionSeriesListForActualPicture.add(new MotionSeries(color, clusterPair, entry.getKey()));
                 }
             }

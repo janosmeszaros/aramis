@@ -2,29 +2,29 @@ package hu.u_szeged.inf.aramis.camera.process;
 
 import android.graphics.Bitmap;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Table;
-
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 
-import hu.u_szeged.inf.aramis.model.BlurredPicture;
+import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 import hu.u_szeged.inf.aramis.model.Coordinate;
+import hu.u_szeged.inf.aramis.model.Picture;
 
 public class PictureEvaluator {
     private final Logger LOGGER = LoggerFactory.getLogger(PictureEvaluator.class);
+    private double[] pixels = new double[TakePictureCallback.PICTURE_NUMBER];
+    private final Median median = new Median();
 
-    public Bitmap evaluate(List<BlurredPicture> pictures, Table<Integer, Integer, Boolean> coordinates) {
-        Bitmap original = pictures.get(pictures.size() - 1).picture.bitmap;
+    public Bitmap evaluate(List<Picture> pictures) {
+        Bitmap original = pictures.get(pictures.size() - 1).bitmap;
         Bitmap output = Bitmap.createBitmap(original.getWidth(), original.getHeight(), original.getConfig());
         LOGGER.info("Start evaluating pictures!");
         for (int x = 0; x < original.getWidth(); x++) {
             for (int y = 0; y < original.getHeight(); y++) {
-                Integer color = evaluatePixel(pictures, x, y);
-                output.setPixel(x, y, color);
+                double color = evaluatePixel(pictures, x, y);
+                output.setPixel(x, y, (int) color);
             }
         }
         return output;
@@ -39,13 +39,11 @@ public class PictureEvaluator {
         return output;
     }
 
-    private Integer evaluatePixel(List<BlurredPicture> pictures, int x, int y) {
-        List<Integer> pixelsFromPictures = Lists.newArrayList();
-        for (BlurredPicture picture : pictures) {
-            int pixel = picture.picture.bitmap.getPixel(x, y);
-            pixelsFromPictures.add(pixel);
+    private double evaluatePixel(List<Picture> pictures, int x, int y) {
+        for (int i = 0; i < pictures.size(); i++) {
+            int pixel = pictures.get(i).bitmap.getPixel(x, y);
+            pixels[i] = pixel;
         }
-        Collections.sort(pixelsFromPictures);
-        return pixelsFromPictures.get(pictures.size() / 2);
+        return median.evaluate(pixels);
     }
 }

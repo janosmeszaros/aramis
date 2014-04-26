@@ -2,66 +2,41 @@ package hu.u_szeged.inf.aramis.camera.process.difference;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
 
+import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
 import hu.u_szeged.inf.aramis.model.BlurredPicture;
-import hu.u_szeged.inf.aramis.model.Picture;
+import hu.u_szeged.inf.aramis.model.DifferenceResult;
 
 public class CounterScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CounterScheduler.class);
-    public final CountDownLatch countDown;
-    public final ExecutorService executorService;
-    public final List<FutureTask> tasks = Lists.newArrayList();
+    protected final CompletionService<DifferenceResult> completionService;
 
-    private CounterScheduler(CountDownLatch countDown, ExecutorService executorService) {
-        this.countDown = countDown;
-        this.executorService = executorService;
+    protected CounterScheduler(CompletionService<DifferenceResult> completionService) {
+        this.completionService = completionService;
     }
 
-    public static CounterScheduler counterScheduler(CountDownLatch countDown, ExecutorService executorService) {
-        return new CounterScheduler(countDown, executorService);
+    public static CounterScheduler counterScheduler(CompletionService<DifferenceResult> completionService) {
+        return new CounterScheduler(completionService);
     }
 
     public void schedule(BlurredPicture one, BlurredPicture two) {
-        FutureTask<Table<Integer, Integer, Boolean>> task = new FutureTask<Table<Integer, Integer, Boolean>>(new DiffCounter(countDown, one, two));
-        startTask(task);
-    }
-
-    public FutureTask<Table<Integer, Integer, Boolean>> schedule(Picture one, BlurredPicture two, Table<Integer, Integer, Boolean> differenceCoordinates) {
-        FutureTask<Table<Integer, Integer, Boolean>> task = new FutureTask<Table<Integer, Integer, Boolean>>(new DiffCounter(countDown, one, two, differenceCoordinates));
-        startTask(task);
-        return task;
-    }
-
-    private void startTask(FutureTask<Table<Integer, Integer, Boolean>> task) {
-        tasks.add(task);
-        executorService.execute(task);
+        completionService.submit(DiffCounter.diffCounter(one, two));
     }
 
     public Table<Integer, Integer, Boolean> getDiffCoordinates() throws InterruptedException, ExecutionException {
-        LOGGER.info("Waiting for countdown!");
-        countDown.await();
-        LOGGER.info("Countdown finished!");
         Table<Integer, Integer, Boolean> diffCoordinates = HashBasedTable.create();
-        for (FutureTask<Table<Integer, Integer, Boolean>> task : tasks) {
-            Table<Integer, Integer, Boolean> coordinates = task.get();
-            LOGGER.debug("Adding {} coordinates for task no: {}", coordinates.size(), tasks.indexOf(task));
+        for (int i = 0; i < TakePictureCallback.PICTURE_NUMBER - 1; i++) {
+            Table<Integer, Integer, Boolean> coordinates = completionService.take().get().table;
+            LOGGER.debug("Adding {} coordinates for task no: {}", coordinates.size(), i);
             diffCoordinates.putAll(coordinates);
         }
         return ImmutableTable.<Integer, Integer, Boolean>builder().putAll(diffCoordinates).build();
-    }
-
-    public void clear() {
-        tasks.clear();
     }
 }

@@ -47,7 +47,6 @@ public class PictureCollector {
 
     public void clear() {
         pictures.clear();
-        counterScheduler.clear();
     }
 
     public int getSize() {

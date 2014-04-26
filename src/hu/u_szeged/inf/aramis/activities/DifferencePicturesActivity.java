@@ -102,16 +102,17 @@ public class DifferencePicturesActivity extends Activity {
             });
             collector.addPictures(pictures);
             Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
-            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures(), pictures);
+            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
 
-            Map<Picture, List<ClusterPair>> transformedMap = sortMapWithPicture(processResult.stringListMap);
+            Map<Picture, List<ClusterPair>> sortedMap = sortMapWithPicture(processResult.stringListMap);
             Picture background = processResult.backgroundPicture;
 
-            List<MotionSeries> motionSeriesList = chainDetector.spotChains(transformedMap);
-            Map<Picture, Bitmap> bitmaps = chainDetector.markChains(transformedMap.keySet(), motionSeriesList);
+
+            List<MotionSeries> motionSeriesList = chainDetector.spotChains(sortedMap);
+            Map<Picture, Bitmap> bitmaps = chainDetector.markChains(sortedMap.keySet(), motionSeriesList);
             Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);
             ImmutableSortedMap<Picture, Table<Integer, Integer, Cluster<Coordinate>>> areas =
-                    createAreas(transformedMap, sortedBitmaps, background.bitmap);
+                    createAreas(sortedMap, sortedBitmaps, background.bitmap);
 
             BitmapRefresher refresher = new BitmapRefresher(evaluator,
                     background);
