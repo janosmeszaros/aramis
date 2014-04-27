@@ -31,7 +31,6 @@ import java.util.List;
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
-import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
 import hu.u_szeged.inf.aramis.model.Picture;
 
@@ -40,12 +39,10 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 @EActivity(R.layout.file_list)
 public class FileChooser extends Activity implements AdapterView.OnItemClickListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileChooser.class);
-
     @App
     protected MainApplication application;
     @ViewById(R.id.list_files)
     android.widget.ListView pictureList;
-    private ProgressBarHandler progressBarHandler;
 
     private File currentDir;
     private FileArrayAdapter adapter;
@@ -72,17 +69,6 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
         savePictures(pictures);
         startPagerActivity(pictures);
     }
-
-    @UiThread
-    void stopProgress() {
-        progressBarHandler.stop();
-    }
-
-    void startProgress() {
-        progressBarHandler = new ProgressBarHandler(this);
-        progressBarHandler.start();
-    }
-
 
     private void savePictures(List<Picture> pictures) {
         for (Picture picture : pictures) {
@@ -115,7 +101,7 @@ public class FileChooser extends Activity implements AdapterView.OnItemClickList
             public String apply(Picture input) {
                 return input.name;
             }
-        })).start();
+        })).isAddingNecessary(true).start();
     }
 
     private void fill(File f) {

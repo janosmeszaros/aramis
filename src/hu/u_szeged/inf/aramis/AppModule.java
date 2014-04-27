@@ -11,9 +11,9 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import hu.u_szeged.inf.aramis.camera.process.BackgroundEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
-import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.difference.Clustering;
 import hu.u_szeged.inf.aramis.camera.process.difference.CounterScheduler;
 import hu.u_szeged.inf.aramis.camera.process.difference.MultipleCounterScheduler;
@@ -42,7 +42,7 @@ public class AppModule implements Module {
 
     @Override
     public void configure(Binder binder) {
-        binder.bind(PictureEvaluator.class).in(SINGLETON);
+        binder.bind(BackgroundEvaluator.class).in(SINGLETON);
         binder.bind(ClusterUtils.class).in(SINGLETON);
         binder.bind(ChainDetector.class).in(SINGLETON);
         binder.bind(ImageProcessor.class).in(SINGLETON);

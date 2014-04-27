@@ -21,6 +21,10 @@ import com.googlecode.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import hu.u_szeged.inf.aramis.activities.fileselector.FileChooser_;
 import hu.u_szeged.inf.aramis.activities.listpictures.PictureListActivity_;
 import hu.u_szeged.inf.aramis.camera.TakePictureCallback;
@@ -92,10 +96,24 @@ public class MainActivity extends Activity {
             c.setDisplayOrientation(90);
             Camera.Parameters parameters = c.getParameters();
             parameters.setRotation(90);
+            Camera.Size size = determinePictureSize(parameters);
+            LOGGER.info("Setting camera size to {} {}", size.width, size.height);
+            parameters.setPictureSize(size.width, size.height);
             takePictureCallback.setSize(parameters.getPictureSize());
             c.setParameters(parameters);
         }
         return c;
+    }
+
+    private Camera.Size determinePictureSize(Camera.Parameters parameters) {
+        List<Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
+        Collections.sort(supportedPictureSizes, new Comparator<Camera.Size>() {
+            @Override
+            public int compare(Camera.Size size, Camera.Size size2) {
+                return Integer.valueOf(size.width * size.height).compareTo(size2.height * size2.width);
+            }
+        });
+        return supportedPictureSizes.get(0);
     }
 
     @SeekBarProgressChange(R.id.seekBar)

@@ -35,9 +35,9 @@ import java.util.concurrent.ExecutionException;
 import hu.u_szeged.inf.aramis.R;
 import hu.u_szeged.inf.aramis.adapter.FullScreenImageAdapter;
 import hu.u_szeged.inf.aramis.adapter.ProgressBarHandler;
+import hu.u_szeged.inf.aramis.camera.process.BackgroundEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
-import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
 import hu.u_szeged.inf.aramis.camera.process.display.BitmapRefresher;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainDetector;
 import hu.u_szeged.inf.aramis.camera.process.display.ChainResolver;
@@ -62,12 +62,12 @@ public class DifferencePicturesActivity extends Activity {
     List<String> picturePaths;
     @Extra("resultBitmapPaths")
     Map<String, List<ClusterPair>> resultBitmapPaths;
-    @Extra("backgroundPicturePath")
-    String backgroundPicturePath;
+    @Extra("isAddingNecessary")
+    boolean isAddingNecessary;
     @Inject
     protected ImageProcessor processor;
     @Inject
-    PictureEvaluator evaluator;
+    BackgroundEvaluator evaluator;
     @Inject
     protected PictureCollector collector;
     @Inject
@@ -89,20 +89,7 @@ public class DifferencePicturesActivity extends Activity {
     @Background
     protected void setupResult() {
         try {
-            List<Picture> pictures = Lists.transform(picturePaths, new Function<String, Picture>() {
-                @Override
-                public Picture apply(String input) {
-                    try {
-                        return picture(input, BitmapFactory.decodeFile(PictureSaver.getFilePathForPicture(input), new BitmapFactory.Options()));
-                    } catch (IOException e) {
-                        LOGGER.error("Cannot find specified file with name {}", input);
-                        return null;
-                    }
-                }
-            });
-            collector.addPictures(pictures);
-            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
-            ProcessResult processResult = processor.processImages(diffCoordinates, collector.getPictures());
+            ProcessResult processResult = processResult();
 
             Map<Picture, List<ClusterPair>> sortedMap = sortMapWithPicture(processResult.stringListMap);
             Picture background = processResult.backgroundPicture;
@@ -130,6 +117,29 @@ public class DifferencePicturesActivity extends Activity {
         } finally {
             stopProgress();
         }
+    }
+
+    private ProcessResult processResult() throws InterruptedException, ExecutionException, IOException {
+        if (isAddingNecessary) {
+            List<Picture> pictures = deserializePictures();
+            collector.addPictures(pictures);
+        }
+        Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
+        return processor.processImages(diffCoordinates, collector.getPictures());
+    }
+
+    private List<Picture> deserializePictures() {
+        return Lists.transform(picturePaths, new Function<String, Picture>() {
+            @Override
+            public Picture apply(String input) {
+                try {
+                    return picture(input, BitmapFactory.decodeFile(PictureSaver.getFilePathForPicture(input), new BitmapFactory.Options()));
+                } catch (IOException e) {
+                    LOGGER.error("Cannot find specified file with name {}", input);
+                    return null;
+                }
+            }
+        });
     }
 
     @UiThread

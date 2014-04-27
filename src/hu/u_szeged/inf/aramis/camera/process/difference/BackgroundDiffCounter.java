@@ -5,7 +5,6 @@ import android.graphics.Color;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Table;
-import com.jabistudio.androidjhlabs.filter.util.AndroidUtils;
 import com.jabistudio.androidjhlabs.filter.util.PixelUtils;
 
 import org.slf4j.Logger;
@@ -17,6 +16,8 @@ import hu.u_szeged.inf.aramis.model.BlurredPicture;
 import hu.u_szeged.inf.aramis.model.DifferenceResult;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.utils.FilterUtils;
+
+import static com.jabistudio.androidjhlabs.filter.util.AndroidUtils.bitmapToIntArray;
 
 public class BackgroundDiffCounter extends DiffCounter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BackgroundDiffCounter.class);
@@ -44,8 +45,8 @@ public class BackgroundDiffCounter extends DiffCounter {
         if (width != second.picture.bitmap.getWidth() || height != second.picture.bitmap.getHeight()) {
             throw new IllegalArgumentException("There are differences in the two picture dimensions");
         }
-        return new BackgroundDiffCounter(AndroidUtils.bitmapToIntArray(background.picture.bitmap),
-                AndroidUtils.bitmapToIntArray(second.picture.bitmap),
+        return new BackgroundDiffCounter(bitmapToIntArray(background.picture.bitmap),
+                bitmapToIntArray(second.picture.bitmap),
                 background.picture.name,
                 second.picture.name,
                 width,

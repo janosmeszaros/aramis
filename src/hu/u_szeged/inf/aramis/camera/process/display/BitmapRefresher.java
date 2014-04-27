@@ -8,15 +8,15 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 
 import java.util.Map;
 
-import hu.u_szeged.inf.aramis.camera.process.PictureEvaluator;
+import hu.u_szeged.inf.aramis.camera.process.BackgroundEvaluator;
 import hu.u_szeged.inf.aramis.model.Coordinate;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 public class BitmapRefresher {
-    private final PictureEvaluator evaluator;
+    private final BackgroundEvaluator evaluator;
     private final Picture backgroundPicture;
 
-    public BitmapRefresher(PictureEvaluator evaluator, Picture backgroundPicture) {
+    public BitmapRefresher(BackgroundEvaluator evaluator, Picture backgroundPicture) {
         this.evaluator = evaluator;
         this.backgroundPicture = backgroundPicture;
     }

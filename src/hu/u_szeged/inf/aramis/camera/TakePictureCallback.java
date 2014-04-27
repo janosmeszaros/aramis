@@ -3,7 +3,6 @@ package hu.u_szeged.inf.aramis.camera;
 import android.content.Context;
 import android.hardware.Camera;
 
-import com.google.common.collect.Table;
 import com.google.inject.Inject;
 import com.googlecode.androidannotations.annotations.AfterInject;
 import com.googlecode.androidannotations.annotations.App;
@@ -11,21 +10,13 @@ import com.googlecode.androidannotations.annotations.Background;
 import com.googlecode.androidannotations.annotations.EBean;
 import com.googlecode.androidannotations.annotations.UiThread;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import hu.u_szeged.inf.aramis.MainApplication;
 import hu.u_szeged.inf.aramis.activities.DifferencePicturesActivity_;
-import hu.u_szeged.inf.aramis.camera.process.ImageProcessor;
 import hu.u_szeged.inf.aramis.camera.process.PictureCollector;
 import hu.u_szeged.inf.aramis.camera.utils.PictureSaver;
-import hu.u_szeged.inf.aramis.model.BlurredPicture;
-import hu.u_szeged.inf.aramis.model.ClusterPair;
 import hu.u_szeged.inf.aramis.model.Picture;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -42,8 +33,6 @@ public class TakePictureCallback implements Camera.PreviewCallback {
     protected Context context;
     @Inject
     protected PictureCollector collector;
-    @Inject
-    protected ImageProcessor imageProcessor;
     private int[] pixels;
     private Camera.Size size;
 
@@ -60,28 +49,14 @@ public class TakePictureCallback implements Camera.PreviewCallback {
             sleep();
             camera.setOneShotPreviewCallback(this);
         } else {
-            evaluate();
-        }
-    }
-
-    @Background
-    protected void evaluate() {
-        try {
-            Table<Integer, Integer, Boolean> diffCoordinates = collector.getDiffCoordinates();
-            List<BlurredPicture> pictures = collector.getPictures();
-            //ProcessResult processResult = imageProcessor.processImages(diffCoordinates, pictures, pictures);
-            //  startPagerActivity(processResult.stringListMap, processResult.backgroundPicture);
-        } catch (InterruptedException e) {
-            LOGGER.error("Interrupted exception", ExceptionUtils.getRootCause(e));
-        } catch (ExecutionException e) {
-            LOGGER.error("Execution exception", ExceptionUtils.getRootCause(e));
+            startPagerActivity();
         }
     }
 
     @UiThread
-    protected void startPagerActivity(Map<String, List<ClusterPair>> resultBitmaps, String filePathForPicture) {
-        DifferencePicturesActivity_.intent(context).resultBitmapPaths(resultBitmaps).
-                backgroundPicturePath(filePathForPicture).start();
+    protected void startPagerActivity() {
+        LOGGER.info("Starting pager activity!");
+        DifferencePicturesActivity_.intent(context).isAddingNecessary(false).start();
     }
 
     @Background

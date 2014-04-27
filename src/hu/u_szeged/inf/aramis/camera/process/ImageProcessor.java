@@ -44,7 +44,7 @@ public class ImageProcessor {
     @App
     protected MainApplication application;
     @Inject
-    private PictureEvaluator evaluator;
+    private BackgroundEvaluator evaluator;
     @Inject
     private MultipleCounterScheduler multipleCounterScheduler;
     @Inject
