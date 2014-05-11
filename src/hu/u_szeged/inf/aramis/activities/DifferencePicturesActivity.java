@@ -94,7 +94,6 @@ public class DifferencePicturesActivity extends Activity {
             Map<Picture, List<ClusterPair>> sortedMap = sortMapWithPicture(processResult.stringListMap);
             Picture background = processResult.backgroundPicture;
 
-
             List<MotionSeries> motionSeriesList = chainDetector.spotChains(sortedMap);
             Map<Picture, Bitmap> bitmaps = chainDetector.markChains(sortedMap.keySet(), motionSeriesList);
             Map<Picture, Bitmap> sortedBitmaps = sortMapWithPicture(bitmaps);

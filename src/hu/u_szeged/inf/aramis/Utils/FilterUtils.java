@@ -6,10 +6,13 @@ import com.jabistudio.androidjhlabs.filter.GaussianFilter;
 import com.jabistudio.androidjhlabs.filter.MaximumFilter;
 import com.jabistudio.androidjhlabs.filter.MinimumFilter;
 
-public class FilterUtils {
+public final class FilterUtils {
     public static final GaussianFilter GAUSSIAN_FILTER = new GaussianFilter(4.0f);
     public static final MaximumFilter MAX_FILTER = new CustomMaximumFilter(6, 6);
     public static final MinimumFilter MIN_FILTER = new CustomMinimumFilter(6, 6);
+
+    private FilterUtils() {
+    }
 
     public static Bitmap filterWithGaussian(Bitmap bitmap) {
         int[] pixels = getPixels(bitmap);

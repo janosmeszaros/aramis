@@ -37,7 +37,7 @@ public class MultipleCounterScheduler extends CounterScheduler {
         }
     }
 
-    public Map<Picture, Table<Integer, Integer, Boolean>> getDiffCoordinates2() throws InterruptedException, ExecutionException {
+    public Map<Picture, Table<Integer, Integer, Boolean>> getDifferenceCoordinates() throws InterruptedException, ExecutionException {
         LOGGER.info("Waiting for countdown!");
         Map<Picture, Table<Integer, Integer, Boolean>> result = Maps.newLinkedHashMap();
         for (int i = 0; i < TakePictureCallback.PICTURE_NUMBER; i++) {

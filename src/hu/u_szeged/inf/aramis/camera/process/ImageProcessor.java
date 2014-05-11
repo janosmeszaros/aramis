@@ -68,7 +68,7 @@ public class ImageProcessor {
         PictureSaver.save(backgroundPicture);
         BlurredPicture blurredBackground = blurredPicture(result.copy(result.getConfig(), false), backgroundPicture.name);
         multipleCounterScheduler.schedule(blurredBackground, blurredPictures, diffCoordinates);
-        Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps = multipleCounterScheduler.getDiffCoordinates2();
+        Map<Picture, Table<Integer, Integer, Boolean>> resultBitmaps = multipleCounterScheduler.getDifferenceCoordinates();
         Map<Picture, List<Cluster<Coordinate>>> clustersForPictures = getClustersForPictures(resultBitmaps);
         Map<Picture, List<ClusterPair>> pictureListMap = clusterComparator.countSimilarity(clustersForPictures);
         return processResult(loadOriginalInputs(pictureListMap), backgroundPicture);

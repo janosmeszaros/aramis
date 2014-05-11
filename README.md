@@ -1,4 +1,4 @@
-aramis
+Aramis
 ======
 
 This is my thesis for MSc in University of Szeged.

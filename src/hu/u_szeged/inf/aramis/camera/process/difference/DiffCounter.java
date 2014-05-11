@@ -19,11 +19,6 @@ import hu.u_szeged.inf.aramis.model.DifferenceResult;
 import hu.u_szeged.inf.aramis.model.Picture;
 import hu.u_szeged.inf.aramis.utils.FilterUtils;
 
-import static android.graphics.Color.blue;
-import static android.graphics.Color.green;
-import static android.graphics.Color.red;
-import static java.lang.Math.abs;
-
 public class DiffCounter implements Callable<DifferenceResult> {
     public static final int BORDER = 15;
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffCounter.class);
@@ -96,15 +91,5 @@ public class DiffCounter implements Callable<DifferenceResult> {
 
     protected void savePicture(Picture picture) {
         PictureSaver.save(picture);
-    }
-
-    private synchronized int countTotalDiff(int firstPixel, int secondPixel) {
-        int luminanceFirst = luminance(red(firstPixel), green(firstPixel), blue(firstPixel));
-        int luminanceSecond = luminance(red(secondPixel), green(secondPixel), blue(secondPixel));
-        return abs(luminanceFirst - luminanceSecond);
-    }
-
-    private int luminance(int r, int g, int b) {
-        return Math.round(0.299f * r + 0.587f * g + 0.114f * b);
     }
 }
